@@ -25,10 +25,10 @@ CLASS FLYING OBJECT
 class flyingObject
 {
 	friend class gravityField;
-	std::string name;
 protected:
 	static int oNumber;
 	char type;
+	std::string name;
 	double m;
 	double d;
 	double x;
@@ -82,60 +82,59 @@ public:
 
 int flyingObject::oNumber = 0;
 
-std::ostream& operator<<(std::ostream& out, const flyingObject *obj) {
+std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
+	std::streamsize fp = std::cout.precision();
 	std::cout << std::setprecision(3);
-	std::cout << obj->getName() << std::endl;
-	std::cout << "m:  " << obj->getMass() << std::endl;
-	std::cout << "d:  " << obj->getDiameter() << std::endl;
-	std::cout << "x:  " << obj->getX() << std::endl;
-	std::cout << "y:  " << obj->getY() << std::endl;
-	std::cout << "z:  " << obj->getZ() << std::endl;
-	std::cout << "Vx: " << obj->getVx() << std::endl;
-	std::cout << "Vy: " << obj->getVy() << std::endl;
-	std::cout << "Vz: " << obj->getVz() << std::endl;
-	std::cout << "ax: " << obj->getAx() << std::endl;
-	std::cout << "ay: " << obj->getAy() << std::endl;
-	std::cout << "az: " << obj->getAz() << std::endl;
-
+	std::cout << obj.getName() << std::endl;
+	std::cout << "m:  " << obj.getMass() << std::endl;
+	std::cout << "d:  " << obj.getDiameter() << std::endl;
+	std::cout << "x:  " << obj.getX() << std::endl;
+	std::cout << "y:  " << obj.getY() << std::endl;
+	std::cout << "z:  " << obj.getZ() << std::endl;
+	std::cout << "Vx: " << obj.getVx() << std::endl;
+	std::cout << "Vy: " << obj.getVy() << std::endl;
+	std::cout << "Vz: " << obj.getVz() << std::endl;
+	std::cout << "ax: " << obj.getAx() << std::endl;
+	std::cout << "ay: " << obj.getAy() << std::endl;
+	std::cout << "az: " << obj.getAz() << std::endl;
+	std::cout << std::setprecision(fp);
 	return std::cout;
-}
-
-flyingObject::flyingObject(std::string oName, double mass,double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
-	name{ oName }, type{ 'f' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
-	oNumber++;
-	ax = 0.0;
-	ay = 0.0;
-	az = 0.0;
-}
-flyingObject::flyingObject(double mass,double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
-	m{ mass }, type{ 'f' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
-	name = "Object" + std::to_string(oNumber);
-	oNumber++;
-	ax = 0.0;
-	ay = 0.0;
-	az = 0.0;
 }
 
 std::string flyingObject::shortDescription(void) {
 	std::string tmp;
-	tmp = std::to_string(m)+","+std::to_string(d) + "," + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(vx) + "," + std::to_string(vy) + "," + std::to_string(vz);
+	tmp =name + "," + std::to_string(m)+","+std::to_string(d) + "," + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(vx) + "," + std::to_string(vy) + "," + std::to_string(vz);
 	return tmp;
 }
-
-void flyingObject::updateVelocity(double dt) {
-	vx += dt*ax;
-	vy += dt*ay;
-	vz += dt*az;
+void flyingObject::updateAcceleration(double Ex, double Ey, double Ez) {
+	ax = Ex;
+	ay = Ey;
+	az = Ez;
 }
 void flyingObject::updatePosition(double dt) {
 	x = x + vx*dt + ax*dt*dt / 2;
 	y = y + vy*dt + ay*dt*dt / 2;
 	z = z + vz*dt + az*dt*dt / 2;
 }
-void flyingObject::updateAcceleration(double Ex,double Ey,double Ez) {
-	ax = Ex;
-	ay = Ey;
-	az = Ez;
+void flyingObject::updateVelocity(double dt) {
+	vx += dt*ax;
+	vy += dt*ay;
+	vz += dt*az;
+}
+flyingObject::flyingObject(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
+	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
+	oNumber++;
+	ax = 0.0;
+	ay = 0.0;
+	az = 0.0;
+}
+flyingObject::flyingObject(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
+	m{ mass }, type{ 'o' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
+	name = "Object" + std::to_string(oNumber);
+	oNumber++;
+	ax = 0.0;
+	ay = 0.0;
+	az = 0.0;
 }
 
 /*
@@ -170,24 +169,9 @@ public:
 	rocket(std::string oName, double mass = 0.0,double diameter=0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0, double Fx = 0.0, double Fy = 0.0, double Fz = 0.0);
 	rocket(double mass = 0.0,double diameter=0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0, double Fx = 0.0, double Fy = 0.0, double Fz = 0.0);
 	rocket(const flyingObject& obj, double Fx = 0.0, double Fy = 0.0, double Fz = 0.0);
+	~rocket(void) {}
 };
-rocket::rocket(const flyingObject& obj, double Fx, double Fy, double Fz) :
-	flyingObject{ obj }, Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
-	type = 'r';
-	recalculateEngineAcceleration();
-}
 
-rocket::rocket(std::string oName, double mass,double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ, double Fx, double Fy, double Fz) :
-	flyingObject(oName, mass,diameter, xX, yY, zZ, vX, vY, vZ), Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
-	type = 'r';
-	recalculateEngineAcceleration();
-}
-
-rocket::rocket(double mass,double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ, double Fx, double Fy, double Fz) :
-	flyingObject(mass,diameter, xX, yY, zZ, vX, vY, vZ), Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
-	type = 'r';
-	recalculateEngineAcceleration();
-}
 
 void rocket::recalculateEngineAcceleration(void) {
 	if (m != 0.0) {
@@ -195,8 +179,7 @@ void rocket::recalculateEngineAcceleration(void) {
 		aye = Fye / m;
 		aze = Fze / m;
 	}
-	else
-	{
+	else {
 		axe = 0.0;
 		aye = 0.0;
 		aze = 0.0;
@@ -205,7 +188,7 @@ void rocket::recalculateEngineAcceleration(void) {
 
 std::string rocket::shortDescription(void) {
 	std::string tmp;
-	tmp = std::to_string(m) + "," + std::to_string(d) + "," + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(vx) + "," + std::to_string(vy) + "," + std::to_string(vz) + "," + std::to_string(Fxe) + "," + std::to_string(Fye) + "," + std::to_string(Fze);
+	tmp = name + "," + std::to_string(m) + "," + std::to_string(d) + "," + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(vx) + "," + std::to_string(vy) + "," + std::to_string(vz) + "," + std::to_string(Fxe) + "," + std::to_string(Fye) + "," + std::to_string(Fze);
 	return tmp;
 }
 
@@ -214,7 +197,23 @@ void rocket::updateAcceleration(double Ex, double Ey, double Ez) {
 	ay = Ey+aye;
 	az = Ez+aze;
 }
+rocket::rocket(const flyingObject& obj, double Fx, double Fy, double Fz) :
+	flyingObject{ obj }, Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
+	type = 'r';
+	recalculateEngineAcceleration();
+}
 
+rocket::rocket(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ, double Fx, double Fy, double Fz) :
+	flyingObject(oName, mass, diameter, xX, yY, zZ, vX, vY, vZ), Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
+	type = 'r';
+	recalculateEngineAcceleration();
+}
+
+rocket::rocket(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ, double Fx, double Fy, double Fz) :
+	flyingObject(mass, diameter, xX, yY, zZ, vX, vY, vZ), Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
+	type = 'r';
+	recalculateEngineAcceleration();
+}
 /*
 
 CLASS GRAVITY FIELD
@@ -226,46 +225,22 @@ class gravityField
 private:
 	std::list<flyingObject*> objects;
 public:
-	void addObject(flyingObject* next);
-	void removeObject(std::string name);
+	void addObject(flyingObject* next) throw (std::invalid_argument);
 	void computeGravity(double dt);
 	void printObjects(void);
+	void printObjectsList(void);
+	void removeObject(const std::string name);
+	bool searchObject(const std::string name);
+	
 	~gravityField(void);
 };
-
-gravityField::~gravityField(void) {
-	while (!objects.empty()) {
-		delete objects.front();
-		objects.pop_front();
-	}
-}
-
-void gravityField::printObjects(void) {
-	for (auto x : objects) {
-		std::cout << x;
-	}
-}
 
 void gravityField::addObject(flyingObject* next){
 	for (auto x : objects) {
 		if (x->name == next->name)
-			throw std::runtime_error("Name already exists");
+			throw std::invalid_argument("Obiekt o tej nazwie ju¿ istnieje");
 	}
 	objects.push_back(next);
-}
-
-void gravityField::removeObject(std::string name) {
-	std::list<flyingObject*>::const_iterator pos;
-
-	for (pos = objects.cbegin(); pos != objects.cend(); pos++) {
-		if ((*pos)->name == name) {
-			flyingObject* tmp;
-			tmp = (*pos);
-			objects.erase(pos);
-			delete tmp;
-			break;
-		}
-	}
 }
 void gravityField::computeGravity(double dt) {
 	for (auto i : objects) {
@@ -277,35 +252,66 @@ void gravityField::computeGravity(double dt) {
 				continue;
 			else {
 				double iDisj = i->distance(*j);
-				if (iDisj) {	
+				if (iDisj) {
 					double iDisjSq = i->distanceSquared(*j);
 					double MGRRR = G*j->m / (iDisjSq * iDisj);
-/*					
+					/*
 					Debug option:
 					std::cout <<"iDisj " <<iDisj << std::endl;
 					std::cout << "iDisjSq " << iDisjSq << std::endl;
 					std::cout << "iDisj*iDisjSq" << (iDisjSq * iDisj) << std::endl;
 					std::cout << "MGRRR"<< MGRRR << std::endl;
-*/
+					*/
 					Ex += (j->x - i->x) * MGRRR; //direction j-i
 					Ey += (j->y - i->y) * MGRRR;
 					Ez += (j->z - i->z) * MGRRR;
-
-//					std::cout << Ex << std::endl;
-				
 				}
 			}
 		}
 		i->updateAcceleration(Ex, Ey, Ez);
-		i->updateVelocity(dt);
 		i->updatePosition(dt);
+		i->updateVelocity(dt);
+	}
+}
+void gravityField::printObjects(void) {
+	for (auto x : objects) {
+		std::cout << *x;
+	}
+}
+void gravityField::printObjectsList(void) {
+	for (auto x : objects) {
+		std::cout << x->shortDescription();
+		std::cout << std::endl;
+	}
+}
+void gravityField::removeObject(const std::string name) {
+	std::list<flyingObject*>::const_iterator pos;
+	for (pos = objects.cbegin(); pos != objects.cend(); pos++) {
+		if ((*pos)->name == name) {
+			flyingObject* tmp=*pos;
+			objects.erase(pos);
+			delete tmp;
+			break;
+		}
+	}
+}
+bool gravityField::searchObject(const std::string name) {
+	for (auto x : objects) {
+		if (x->getName() == name)
+			return true;
+	}
+	return false;
+}
+gravityField::~gravityField(void) {
+	while (!objects.empty()) {
+		delete objects.front();
+		objects.pop_front();
 	}
 }
 
-
 /*
 
-MENU - FUNCTIONS
+INPUT/OUTPUT FUNCTIONS
 
 */
 
@@ -319,7 +325,6 @@ flyingObject* readLineFromStream(std::istream &in, gravityField* gravField) {
 	std::getline(linestrm, line, ',');
 	if (line != "")
 		tmpObject->setName(line);
-	
 	if (!linestrm.eof()) {
 		std::string line;
 		std::getline(linestrm, line, ',');
@@ -422,14 +427,16 @@ flyingObject* readLineFromStream(std::istream &in, gravityField* gravField) {
 		delete tmpObject;
 		tmpObject = dynamic_cast<flyingObject*>(tmpRocket);
 	}
-	
-	if (tmpObject!=nullptr)
-		gravField->addObject(tmpObject);
 	return tmpObject;
 }
 
+/*
 
-void addObject(gravityField* gravField) {
+MENU - FUNCTIONS
+
+*/
+
+void addObjectMenu(gravityField* gravField) {
 	char choice;
 	do {
 		std::cout << "0 - Zwyk³y obiekt" << std::endl;
@@ -443,8 +450,18 @@ void addObject(gravityField* gravField) {
 		std::cout << "[Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz]]]]]]]]" << std::endl;
 		{
 			flyingObject* made = readLineFromStream(std::cin, gravField);
-			if (made)
-				std::cout << made->shortDescription();
+			if (made) {
+				try {
+					gravField->addObject(made);
+				}
+				catch (const std::invalid_argument exc) {
+					std::cout << exc.what() << std::endl;
+					delete made;
+					made = nullptr;
+				}
+				if (made)
+					std::cout << made->shortDescription();
+			}
 		}
 		break;
 	case '1':
@@ -452,8 +469,18 @@ void addObject(gravityField* gravField) {
 		std::cout << "[Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
 		{
 			flyingObject* made = readLineFromStream(std::cin, gravField);
-			if (made)
-				std::cout << made->shortDescription();
+			if (made) {
+				try {
+					gravField->addObject(made);
+				}
+				catch (const std::invalid_argument exc) {
+					std::cout << exc.what() << std::endl;
+					delete made;
+					made = nullptr;
+				}
+				if (made)
+					std::cout << made->shortDescription();
+			}
 		}
 		break;
 	case '9':
@@ -462,6 +489,45 @@ void addObject(gravityField* gravField) {
 	
 }
 
+void deleteObjectMenu(gravityField* gravField) {
+	std::cout << "Lista obiektów:" << std::endl;
+	std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+	gravField->printObjectsList();
+	std::cout << "Podaj nazwê obiektu, który chcesz usun¹æ, lub Esc i Enter by wyjœæ" << std::endl;
+	char c;
+	c = std::cin.get();
+	if (static_cast<int>(c) == 27)
+		return;
+	string name;
+	std::cin >> name;
+	name = c + name;
+	if (gravField->searchObject(name))
+		gravField->removeObject(name);
+	else
+		std::cout << "B³êdna nazwa obiektu" << std::endl;
+}
+
+void modifyObjectMenu(gravityField* gravField) {
+	std::cout << "Lista obiektów:" << std::endl;
+	std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+	gravField->printObjectsList();
+	std::cout << "Podaj nazwê obiektu, który chcesz zmodyfikowaæ, lub Esc i Enter by wyjœæ" << std::endl;
+	char c;
+	c = std::cin.get();
+	if (static_cast<int>(c) == 27)
+		return;
+	string name;
+	std::cin >> name;
+	name = c + name;
+	if (gravField->searchObject(name)) {
+		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
+		flyingObject* tmpObject = readLineFromStream(std::cin, gravField);
+		gravField->removeObject(name);
+		gravField->addObject(tmpObject);
+	}
+	else
+		std::cout << "B³êdna nazwa obiektu" << std::endl;
+}
 /*
 
 INIT
@@ -474,10 +540,10 @@ int init(void) {
 	std::cout << "Witaj w programie Planety:" << std::endl;
 	do {
 		do {
-			std::cout << "0 - Dodaj obiekt lataj¹cy" << std::endl;
-			std::cout << "1 - Usuñ obiekt lataj¹cy" << std::endl;
-			std::cout << "2 - Modyfikuj obiekt lataj¹cy" << std::endl;
-			std::cout << "3 - Wyœwietl obiekty lataj¹ce" << std::endl;
+			std::cout << "0 - Dodaj obiekt" << std::endl;
+			std::cout << "1 - Usuñ obiekt" << std::endl;
+			std::cout << "2 - Modyfikuj obiekt" << std::endl;
+			std::cout << "3 - Wyœwietl obiekty" << std::endl;
 			std::cout << "4 - Rozpocznij symulacjê" << std::endl;
 			std::cout << "5 - Zapisz konfiguracjê do pliku" << std::endl;
 			std::cout << "6 - Wczytaj konfiguracjê z pliku" << std::endl;
@@ -487,11 +553,13 @@ int init(void) {
 		
 		switch (choice) {
 		case '0':
-			addObject(gravField);
+			addObjectMenu(gravField);
 			break;
 		case '1':
+			deleteObjectMenu(gravField);
 			break;
 		case '2':
+			modifyObjectMenu(gravField);
 			break;
 		case '3':
 			break;
@@ -527,7 +595,7 @@ int main(void)
 		
 		system("cls");
 		test.printObjects();
-		test.compute(static_cast<double>(dif)/static_cast<double>(CLOCKS_PER_SEC));
+		test.computeGravity(static_cast<double>(dif)/static_cast<double>(CLOCKS_PER_SEC));
 		cout << dif;
 
 		dif = clock()-start_clock;
