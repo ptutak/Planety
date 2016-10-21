@@ -51,7 +51,7 @@ public:
 	virtual void updateAcceleration(double Ex, double Ey, double Ez);
 	virtual void updatePosition(double dt);
 	virtual void updateVelocity(double dt);
-	virtual std::string shortDescription(void);
+	virtual std::string shortDescription(int precision=-1);
 
 	std::string getName(void) const { return name; }
 	double getMass(void) const { return m; }
@@ -85,8 +85,7 @@ public:
 int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
-	std::streamsize fp = std::cout.precision();
-	std::cout << std::setprecision(3);
+	std::cout << std::setprecision(4);
 	std::cout << obj.getName() << std::endl;
 	std::cout << "m:  " << obj.getMass() << std::endl;
 	std::cout << "d:  " << obj.getDiameter() << std::endl;
@@ -99,14 +98,28 @@ std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
 	std::cout << "ax: " << obj.getAx() << std::endl;
 	std::cout << "ay: " << obj.getAy() << std::endl;
 	std::cout << "az: " << obj.getAz() << std::endl;
-	std::cout << std::setprecision(fp);
+	std::cout << std::defaultfloat;
 	return std::cout;
 }
 
-std::string flyingObject::shortDescription(void) {
-	std::string tmp;
-	tmp =name + "," + std::to_string(m)+","+std::to_string(d) + "," + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(vx) + "," + std::to_string(vy) + "," + std::to_string(vz);
-	return tmp;
+std::string flyingObject::shortDescription(int prec) {
+	std::string retString, tempString;
+	std::stringstream strm;
+	double num;
+	retString = name;
+	if (prec >= 0)
+		strm << std::setprecision(prec);
+	{ strm.str(""); strm << m; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << d; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << x; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << y; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << z; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString; }
+	if (prec >= 0)
+		strm << std::defaultfloat;
+	return retString;
 }
 void flyingObject::updateAcceleration(double Ex, double Ey, double Ez) {
 	ax = Ex;
@@ -156,7 +169,7 @@ private:
 	double aze;
 public:
 	void recalculateEngineAcceleration(void);
-	std::string shortDescription(void);
+	std::string shortDescription(int precision=-1);
 	void updateAcceleration(double Ex, double Ey, double Ez);
 
 	double getForceX(void) const { return Fxe; }
@@ -188,10 +201,27 @@ void rocket::recalculateEngineAcceleration(void) {
 	}
 }
 
-std::string rocket::shortDescription(void) {
-	std::string tmp;
-	tmp = name + "," + std::to_string(m) + "," + std::to_string(d) + "," + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(vx) + "," + std::to_string(vy) + "," + std::to_string(vz) + "," + std::to_string(Fxe) + "," + std::to_string(Fye) + "," + std::to_string(Fze);
-	return tmp;
+std::string rocket::shortDescription(int prec) {
+	std::string retString, tempString;
+	std::stringstream strm;
+	double num;
+	retString = name;
+	if (prec >= 0)
+		strm << std::setprecision(prec);
+	{ strm.str(""); strm << m; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << d; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << x; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << y; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << z; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << Fxe; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << Fye; tempString = strm.str(); retString += ',' + tempString; }
+	{ strm.str(""); strm.clear(); strm << Fze; tempString = strm.str(); retString += ',' + tempString; }
+	if (prec >= 0)
+		strm << std::defaultfloat;
+	return retString;
 }
 
 void rocket::updateAcceleration(double Ex, double Ey, double Ez) {
@@ -230,7 +260,7 @@ public:
 	void addObject(flyingObject* next);
 	void computeGravity(double dt);
 	void printObjects(void) const;
-	void printObjectsList(std::ostream& out) const;
+	void printObjectsList(std::ostream& out,int precision=-1) const;
 	void removeObject(const std::string name);
 	bool searchObject(const std::string name) const;
 	
@@ -280,9 +310,9 @@ void gravityField::printObjects(void) const {
 		std::cout << *x;
 	}
 }
-void gravityField::printObjectsList(std::ostream& out) const {
+void gravityField::printObjectsList(std::ostream& out,int prec) const {
 	for (auto x : objects) {
-		out << x->shortDescription();
+		out << x->shortDescription(prec);
 		out << std::endl;
 	}
 }
@@ -361,6 +391,7 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			double number = 0.0;
 			std::stringstream data(line);
 			data >> number;
+			std::cout << number;
 			if (number != 0.0)
 				tmpObject->setY(number);
 		}
@@ -370,6 +401,7 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			double number = 0.0;
 			std::stringstream data(line);
 			data >> number;
+			std::cout << number;
 			if (number != 0.0)
 				tmpObject->setZ(number);
 		}
@@ -441,29 +473,10 @@ MENU - FUNCTIONS
 */
 
 void addObjectMenu(gravityField* gravField) {
-	char choice;
-	std::string tmp;
-	do {
-		std::cout << std::endl;
-		std::cout << "0 - Zwykly obiekt" << std::endl;
-		std::cout << "1 - Rakieta" << std::endl;
-		std::cout << "9 - Wyjdz" << std::endl;
-		std::cin >> choice;
-		std::getline(std::cin, tmp);
-	} while (choice != '0' && choice != '1' && choice != '9');
-	if (choice == '0') {
-		std::cout << std::endl;
-		std::cout << "Podaj dane obiektu w formacie:" << std::endl;
-		std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz]]]]]]]]" << std::endl;
-	}
-	else if (choice == '1') {
-		std::cout << std::endl;
-		std::cout << "Podaj dane obiektu w formacie:" << std::endl;
-		std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
-	} else
-		return;
+	std::cout << std::endl;
+	std::cout << "Podaj dane obiektu w formacie:" << std::endl;
+	std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
 	flyingObject* made = readObjectFromStream(std::cin);
-
 	if (made) {
 		try {
 			gravField->addObject(made);
@@ -476,16 +489,18 @@ void addObjectMenu(gravityField* gravField) {
 		if (made) {
 			std::cout << "Dodano obiekt: " << made->shortDescription() << std::endl;
 		}
-			
 	}
+	else
+		std::cout << "Nic nie dodalem" << std::endl;
 }
 
 void deleteObjectMenu(gravityField* gravField) {
 	std::cout << std::endl;
 	std::cout << "Lista obiektow:" << std::endl;
 	std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+	std::cout << std::endl;
 	gravField->printObjectsList(std::cout);
-	std::cout << "Podaj nazwe obiektu, ktory chcesz usunac, lub Enter by wyjsc" << std::endl;
+	std::cout << "Podaj nazwe obiektu, ktory chcesz usunac, lub nacisnij Enter by wyjsc" << std::endl;
 	std::string name;
 	std::getline(std::cin, name);
 	if (name == "")
@@ -500,6 +515,7 @@ void modifyObjectMenu(gravityField* gravField) {
 	std::cout << std::endl;
 	std::cout << "Lista obiektow:" << std::endl;
 	std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+	std::cout << std::endl;
 	gravField->printObjectsList(std::cout);
 	std::cout << "Podaj nazwe obiektu, ktory chcesz zmodyfikowac, lub Enter by wyjsc" << std::endl;
 	std::string name;
@@ -533,7 +549,7 @@ void startSimulationMenu(gravityField* gravField) {
 		system("cls");
 		gravField->printObjects();
 		gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
-		
+		std::cout << dif;
 		dif = clock() - start_clock;	//kontrola czasu - obliczanie czasu ostatniej iteracji
 		start_clock = clock();			//pocz¹tek liczenia czasu kolejnej iteracji
 	}
@@ -547,7 +563,7 @@ void saveToFileMenu(const gravityField* gravField) {
 	std::ofstream file;
 	file.open(filename, std::fstream::out|std::fstream::trunc);
 	if (file.good()) {
-		gravField->printObjectsList(file);
+		gravField->printObjectsList(file,11);
 		file.close();
 	}
 	else {
@@ -631,7 +647,7 @@ int init(void) {
 			std::cout << "6 - Wczytaj konfiguracje z pliku" << std::endl;
 			std::cout << "7 - Usun wszystkie obiekty" << std::endl;
 			std::cout << "9 - Wyjdz" << std::endl;
-			std::cin >> choice;
+			choice = std::cin.peek();
 			std::getline(std::cin, tmp);
 		} while (choice < '0' || choice > '9' || choice == '8');
 		switch (choice) {
@@ -682,6 +698,5 @@ using namespace std;
 int main(void)
 {
 	init();
-
 	system("pause");
 }
