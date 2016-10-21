@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include <string>
 #include <list>
@@ -225,12 +226,12 @@ class gravityField
 private:
 	std::list<flyingObject*> objects;
 public:
-	void addObject(flyingObject* next) throw (std::invalid_argument);
+	void addObject(flyingObject* next);
 	void computeGravity(double dt);
-	void printObjects(void);
-	void printObjectsList(void);
+	void printObjects(void) const;
+	void printObjectsList(std::ostream& out) const;
 	void removeObject(const std::string name);
-	bool searchObject(const std::string name);
+	bool searchObject(const std::string name) const;
 	
 	~gravityField(void);
 };
@@ -238,7 +239,7 @@ public:
 void gravityField::addObject(flyingObject* next){
 	for (auto x : objects) {
 		if (x->name == next->name)
-			throw std::invalid_argument("Obiekt o tej nazwie ju¿ istnieje");
+			throw std::invalid_argument("Obiekt o nazwie "+next->getName()+" ju¿ istnieje");
 	}
 	objects.push_back(next);
 }
@@ -273,15 +274,15 @@ void gravityField::computeGravity(double dt) {
 		i->updateVelocity(dt);
 	}
 }
-void gravityField::printObjects(void) {
+void gravityField::printObjects(void) const {
 	for (auto x : objects) {
 		std::cout << *x;
 	}
 }
-void gravityField::printObjectsList(void) {
+void gravityField::printObjectsList(std::ostream& out) const {
 	for (auto x : objects) {
-		std::cout << x->shortDescription();
-		std::cout << std::endl;
+		out << x->shortDescription();
+		out << std::endl;
 	}
 }
 void gravityField::removeObject(const std::string name) {
@@ -295,7 +296,7 @@ void gravityField::removeObject(const std::string name) {
 		}
 	}
 }
-bool gravityField::searchObject(const std::string name) {
+bool gravityField::searchObject(const std::string name) const {
 	for (auto x : objects) {
 		if (x->getName() == name)
 			return true;
@@ -315,97 +316,25 @@ INPUT/OUTPUT FUNCTIONS
 
 */
 
-flyingObject* readLineFromStream(std::istream &in, gravityField* gravField) {
+flyingObject* readObjectFromStream(std::istream& in) {
 	flyingObject* tmpObject = nullptr;
 	std::string line;
 	std::getline(in, line);
-	std::stringstream linestrm(line);
-	line = "";
-	tmpObject = new flyingObject;
-	std::getline(linestrm, line, ',');
-	if (line != "")
+	if (line != "") {
+		tmpObject = new flyingObject;
+		std::stringstream linestrm(line);
+		line = "";
+		std::getline(linestrm, line, ',');
 		tmpObject->setName(line);
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (data.good())
-			tmpObject->setMass(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setDiameter(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setX(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setY(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setZ(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setVx(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setVy(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpObject->setVz(number);
-	}
-	if (!linestrm.eof()) {
-		std::string line;
-		rocket* tmpRocket = new rocket{ *tmpObject };
-		std::getline(linestrm, line, ',');
-		double number = 0.0;
-		std::stringstream data(line);
-		data >> number;
-		if (number != 0.0)
-			tmpRocket->setForceX(number);
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (data.good())
+				tmpObject->setMass(number);
+		}
 		if (!linestrm.eof()) {
 			std::string line;
 			std::getline(linestrm, line, ',');
@@ -413,19 +342,92 @@ flyingObject* readLineFromStream(std::istream &in, gravityField* gravField) {
 			std::stringstream data(line);
 			data >> number;
 			if (number != 0.0)
-				tmpRocket->setForceY(number);
+				tmpObject->setDiameter(number);
 		}
 		if (!linestrm.eof()) {
 			std::string line;
 			std::getline(linestrm, line, ',');
 			double number = 0.0;
-			std::stringstream data;
+			std::stringstream data(line);
 			data >> number;
 			if (number != 0.0)
-				tmpRocket->setForceZ(number);
+				tmpObject->setX(number);
 		}
-		delete tmpObject;
-		tmpObject = dynamic_cast<flyingObject*>(tmpRocket);
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setY(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setZ(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setVx(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setVy(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setVz(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			rocket* tmpRocket = new rocket{ *tmpObject };
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpRocket->setForceX(number);
+			if (!linestrm.eof()) {
+				std::string line;
+				std::getline(linestrm, line, ',');
+				double number = 0.0;
+				std::stringstream data(line);
+				data >> number;
+				if (number != 0.0)
+					tmpRocket->setForceY(number);
+			}
+			if (!linestrm.eof()) {
+				std::string line;
+				std::getline(linestrm, line, ',');
+				double number = 0.0;
+				std::stringstream data;
+				data >> number;
+				if (number != 0.0)
+					tmpRocket->setForceZ(number);
+			}
+			delete tmpObject;
+			tmpObject = dynamic_cast<flyingObject*>(tmpRocket);
+		}
 	}
 	return tmpObject;
 }
@@ -444,63 +446,43 @@ void addObjectMenu(gravityField* gravField) {
 		std::cout << "9 - WyjdŸ" << std::endl;
 		std::cin >> choice;
 	} while (choice != '0' && choice != '1' && choice != '9');
+	
 	switch (choice) {
-	case '0':
 		std::cout << "Podaj dane obiektu w formacie:" << std::endl;
+	case '0':
 		std::cout << "[Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz]]]]]]]]" << std::endl;
-		{
-			flyingObject* made = readLineFromStream(std::cin, gravField);
-			if (made) {
-				try {
-					gravField->addObject(made);
-				}
-				catch (const std::invalid_argument exc) {
-					std::cout << exc.what() << std::endl;
-					delete made;
-					made = nullptr;
-				}
-				if (made)
-					std::cout << made->shortDescription();
-			}
-		}
 		break;
 	case '1':
-		std::cout << "Podaj dane obiektu w formacie:" << std::endl;
 		std::cout << "[Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
-		{
-			flyingObject* made = readLineFromStream(std::cin, gravField);
-			if (made) {
-				try {
-					gravField->addObject(made);
-				}
-				catch (const std::invalid_argument exc) {
-					std::cout << exc.what() << std::endl;
-					delete made;
-					made = nullptr;
-				}
-				if (made)
-					std::cout << made->shortDescription();
-			}
-		}
 		break;
 	case '9':
 		return;
 	}
-	
+
+	flyingObject* made = readObjectFromStream(std::cin);
+	if (made) {
+		try {
+			gravField->addObject(made);
+		}
+		catch (const std::invalid_argument exc) {
+			std::cout << exc.what() << std::endl;
+			delete made;
+			made = nullptr;
+		}
+		if (made)
+			std::cout <<"Dodano obiekt: "<< made->shortDescription()<<std::endl;
+	}
 }
 
 void deleteObjectMenu(gravityField* gravField) {
 	std::cout << "Lista obiektów:" << std::endl;
 	std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
-	gravField->printObjectsList();
-	std::cout << "Podaj nazwê obiektu, który chcesz usun¹æ, lub Esc i Enter by wyjœæ" << std::endl;
-	char c;
-	c = std::cin.get();
-	if (static_cast<int>(c) == 27)
+	gravField->printObjectsList(std::cout);
+	std::cout << "Podaj nazwê obiektu, który chcesz usun¹æ, lub Enter by wyjœæ" << std::endl;
+	std::string name;
+	std::getline(std::cin, name);
+	if (name == "")
 		return;
-	string name;
-	std::cin >> name;
-	name = c + name;
 	if (gravField->searchObject(name))
 		gravField->removeObject(name);
 	else
@@ -510,23 +492,102 @@ void deleteObjectMenu(gravityField* gravField) {
 void modifyObjectMenu(gravityField* gravField) {
 	std::cout << "Lista obiektów:" << std::endl;
 	std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
-	gravField->printObjectsList();
-	std::cout << "Podaj nazwê obiektu, który chcesz zmodyfikowaæ, lub Esc i Enter by wyjœæ" << std::endl;
-	char c;
-	c = std::cin.get();
-	if (static_cast<int>(c) == 27)
+	gravField->printObjectsList(std::cout);
+	std::cout << "Podaj nazwê obiektu, który chcesz zmodyfikowaæ, lub Enter by wyjœæ" << std::endl;
+	std::string name;
+	std::getline(std::cin, name);
+	if (name == "")
 		return;
-	string name;
-	std::cin >> name;
-	name = c + name;
 	if (gravField->searchObject(name)) {
 		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
-		flyingObject* tmpObject = readLineFromStream(std::cin, gravField);
+		flyingObject* tmpObject = readObjectFromStream(std::cin);
+		if (gravField->searchObject(tmpObject->getName()))
+		{
+			std::cout << "Nazwa obiektu ju¿ istnieje";
+			delete tmpObject;
+			return;
+		}
 		gravField->removeObject(name);
 		gravField->addObject(tmpObject);
 	}
 	else
 		std::cout << "B³êdna nazwa obiektu" << std::endl;
+}
+
+void startSimulationMenu(gravityField* gravField) {
+	clock_t start_clock;
+	clock_t dif = 15;
+	start_clock = clock();
+	while (1) {
+		system("cls");
+		gravField->printObjects();
+		gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
+		
+		dif = clock() - start_clock;	//kontrola czasu - obliczanie czasu ostatniej iteracji
+		start_clock = clock();			//pocz¹tek liczenia czasu kolejnej iteracji
+	}
+}
+
+void saveToFileMenu(const gravityField* gravField) {
+	std::string filename="";
+	std::cout << "Podaj nazwê pliku" << std::endl;
+	std::getline(std::cin, filename);
+	std::ofstream file;
+	file.open(filename, std::fstream::out|std::fstream::trunc);
+	if (file.good()) {
+		gravField->printObjectsList(file);
+		file.close();
+	}
+	else {
+		std::cout << "B³êdna nazwa pliku" << std::endl;
+	}
+}
+
+void readFromFileMenu(gravityField* gravField) {
+	std::string filename;
+	std::cout << "Podaj nazwê pliku" << std::endl;
+	std::getline(std::cin, filename);
+	std::ifstream file;
+	file.open(filename, std::fstream::in);
+	if (file.good()) {
+		while (!file.eof()) {
+			flyingObject* tmpObject = readObjectFromStream(file);
+			if (tmpObject)
+			{
+				try {
+					gravField->addObject(tmpObject);
+				}
+				catch (std::invalid_argument x) {
+					std::cout << x.what() << std::endl;
+					delete tmpObject;
+					tmpObject = nullptr;
+				}
+			}
+			if (tmpObject)
+				std::cout << "Dodano obiekt: " << tmpObject->shortDescription() << std::endl;
+		}
+		file.close();
+	}
+	else
+		std::cout << "Niepoprawna nazwa pliku" << std::endl;
+}
+
+void deleteAllObjectsMenu(gravityField*& gravField) {
+	std::cout << "Czy na pewno chcesz usun¹æ wszystkie obiekty? [T/cokolwiek]" << std::endl;
+	char c;
+	std::cin >> c;
+	if (c == 'T') {
+		std::cout << "Ale czy aby na pewno, na pewno??? [TAK/cokolwiek]" << std::endl;
+		std::string del;
+		std::cin >> del;
+		if (del == "TAK") {
+			delete gravField;
+			gravField = new gravityField;
+			std::cout << "OK - usuniêto" << std::endl;
+			return;
+		}
+	}
+	std::cout << "Nie usuwam" << std::endl;
 }
 /*
 
@@ -547,9 +608,10 @@ int init(void) {
 			std::cout << "4 - Rozpocznij symulacjê" << std::endl;
 			std::cout << "5 - Zapisz konfiguracjê do pliku" << std::endl;
 			std::cout << "6 - Wczytaj konfiguracjê z pliku" << std::endl;
+			std::cout << "7 - Usuñ wszystkie obiekty" << std::endl;
 			std::cout << "9 - WyjdŸ" << std::endl;
-			cin >> choice;
-		} while (choice < '0' || choice > '9' || choice == '7' || choice == '8');
+			std::cin >> choice;
+		} while (choice < '0' || choice > '9' || choice == '8');
 		
 		switch (choice) {
 		case '0':
@@ -562,12 +624,21 @@ int init(void) {
 			modifyObjectMenu(gravField);
 			break;
 		case '3':
+			std::cout << "Lista obiektów:" << std::endl;
+			std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+			gravField->printObjectsList(std::cout);
 			break;
 		case '4':
+			startSimulationMenu(gravField);
 			break;
 		case '5':
+			saveToFileMenu(gravField);
 			break;
 		case '6':
+			readFromFileMenu(gravField);
+			break;
+		case '7':
+			deleteAllObjectsMenu(gravField);
 			break;
 		case '9':
 			std::cout << "Goodbye" << std::endl;
@@ -582,24 +653,11 @@ MAIN
 
 */
 
+
+
 using namespace std;
 int main(void)
 {
-	clock_t start_clock;
-	clock_t dif=15;
-	gravityField test;
-	test.addObject(new flyingObject{ 6.0e24 });
-	test.addObject(new flyingObject{ 1.0,6.4e6,0,0,0,7910.0 });
-	start_clock = clock();
-	while (1) {
-		
-		system("cls");
-		test.printObjects();
-		test.computeGravity(static_cast<double>(dif)/static_cast<double>(CLOCKS_PER_SEC));
-		cout << dif;
-
-		dif = clock()-start_clock;
-		start_clock = clock();
-	}
+	init();
 	system("pause");
 }
