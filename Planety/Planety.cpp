@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <Windows.h>
 #include <sstream>
+#include <conio.h>
 
 // CONSTANTS
 
@@ -239,7 +240,7 @@ public:
 void gravityField::addObject(flyingObject* next){
 	for (auto x : objects) {
 		if (x->name == next->name)
-			throw std::invalid_argument("Obiekt o nazwie "+next->getName()+" ju¿ istnieje");
+			throw std::invalid_argument("Obiekt o nazwie "+next->getName()+" juz istnieje");
 	}
 	objects.push_back(next);
 }
@@ -325,14 +326,15 @@ flyingObject* readObjectFromStream(std::istream& in) {
 		std::stringstream linestrm(line);
 		line = "";
 		std::getline(linestrm, line, ',');
-		tmpObject->setName(line);
+		if (line!="")
+			tmpObject->setName(line);
 		if (!linestrm.eof()) {
 			std::string line;
 			std::getline(linestrm, line, ',');
 			double number = 0.0;
 			std::stringstream data(line);
 			data >> number;
-			if (data.good())
+			if (number!=0.0)
 				tmpObject->setMass(number);
 		}
 		if (!linestrm.eof()) {
@@ -440,26 +442,28 @@ MENU - FUNCTIONS
 
 void addObjectMenu(gravityField* gravField) {
 	char choice;
+	std::string tmp;
 	do {
-		std::cout << "0 - Zwyk³y obiekt" << std::endl;
+		std::cout << std::endl;
+		std::cout << "0 - Zwykly obiekt" << std::endl;
 		std::cout << "1 - Rakieta" << std::endl;
-		std::cout << "9 - WyjdŸ" << std::endl;
+		std::cout << "9 - Wyjdz" << std::endl;
 		std::cin >> choice;
+		std::getline(std::cin, tmp);
 	} while (choice != '0' && choice != '1' && choice != '9');
-	
-	switch (choice) {
+	if (choice == '0') {
+		std::cout << std::endl;
 		std::cout << "Podaj dane obiektu w formacie:" << std::endl;
-	case '0':
-		std::cout << "[Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz]]]]]]]]" << std::endl;
-		break;
-	case '1':
-		std::cout << "[Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
-		break;
-	case '9':
-		return;
+		std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz]]]]]]]]" << std::endl;
 	}
-
+	else if (choice == '1') {
+		std::cout << std::endl;
+		std::cout << "Podaj dane obiektu w formacie:" << std::endl;
+		std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
+	} else
+		return;
 	flyingObject* made = readObjectFromStream(std::cin);
+
 	if (made) {
 		try {
 			gravField->addObject(made);
@@ -469,16 +473,19 @@ void addObjectMenu(gravityField* gravField) {
 			delete made;
 			made = nullptr;
 		}
-		if (made)
-			std::cout <<"Dodano obiekt: "<< made->shortDescription()<<std::endl;
+		if (made) {
+			std::cout << "Dodano obiekt: " << made->shortDescription() << std::endl;
+		}
+			
 	}
 }
 
 void deleteObjectMenu(gravityField* gravField) {
-	std::cout << "Lista obiektów:" << std::endl;
-	std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Lista obiektow:" << std::endl;
+	std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
 	gravField->printObjectsList(std::cout);
-	std::cout << "Podaj nazwê obiektu, który chcesz usun¹æ, lub Enter by wyjœæ" << std::endl;
+	std::cout << "Podaj nazwe obiektu, ktory chcesz usunac, lub Enter by wyjsc" << std::endl;
 	std::string name;
 	std::getline(std::cin, name);
 	if (name == "")
@@ -486,32 +493,36 @@ void deleteObjectMenu(gravityField* gravField) {
 	if (gravField->searchObject(name))
 		gravField->removeObject(name);
 	else
-		std::cout << "B³êdna nazwa obiektu" << std::endl;
+		std::cout << "Bledna nazwa obiektu" << std::endl;
 }
 
 void modifyObjectMenu(gravityField* gravField) {
-	std::cout << "Lista obiektów:" << std::endl;
-	std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Lista obiektow:" << std::endl;
+	std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
 	gravField->printObjectsList(std::cout);
-	std::cout << "Podaj nazwê obiektu, który chcesz zmodyfikowaæ, lub Enter by wyjœæ" << std::endl;
+	std::cout << "Podaj nazwe obiektu, ktory chcesz zmodyfikowac, lub Enter by wyjsc" << std::endl;
 	std::string name;
 	std::getline(std::cin, name);
 	if (name == "")
 		return;
 	if (gravField->searchObject(name)) {
-		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Œrednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
+		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
 		flyingObject* tmpObject = readObjectFromStream(std::cin);
-		if (gravField->searchObject(tmpObject->getName()))
+		if (gravField->searchObject(tmpObject->getName())&&(tmpObject->getName()!=name))
 		{
-			std::cout << "Nazwa obiektu ju¿ istnieje";
+			std::cout << "Nazwa obiektu juz istnieje";
 			delete tmpObject;
 			return;
 		}
 		gravField->removeObject(name);
 		gravField->addObject(tmpObject);
+		std::cout << "Zrobione" << std::endl;
 	}
 	else
-		std::cout << "B³êdna nazwa obiektu" << std::endl;
+	{
+		std::cout << "Bledna nazwa obiektu" << std::endl;
+	}
 }
 
 void startSimulationMenu(gravityField* gravField) {
@@ -530,7 +541,8 @@ void startSimulationMenu(gravityField* gravField) {
 
 void saveToFileMenu(const gravityField* gravField) {
 	std::string filename="";
-	std::cout << "Podaj nazwê pliku" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Podaj nazwe pliku" << std::endl;
 	std::getline(std::cin, filename);
 	std::ofstream file;
 	file.open(filename, std::fstream::out|std::fstream::trunc);
@@ -539,13 +551,14 @@ void saveToFileMenu(const gravityField* gravField) {
 		file.close();
 	}
 	else {
-		std::cout << "B³êdna nazwa pliku" << std::endl;
+		std::cout << "Bledna nazwa pliku" << std::endl;
 	}
 }
 
 void readFromFileMenu(gravityField* gravField) {
 	std::string filename;
-	std::cout << "Podaj nazwê pliku" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Podaj nazwe pliku" << std::endl;
 	std::getline(std::cin, filename);
 	std::ifstream file;
 	file.open(filename, std::fstream::in);
@@ -569,13 +582,19 @@ void readFromFileMenu(gravityField* gravField) {
 		file.close();
 	}
 	else
+	{
 		std::cout << "Niepoprawna nazwa pliku" << std::endl;
+	}
+
 }
 
 void deleteAllObjectsMenu(gravityField*& gravField) {
-	std::cout << "Czy na pewno chcesz usun¹æ wszystkie obiekty? [T/cokolwiek]" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Czy na pewno chcesz usunac wszystkie obiekty? [T/cokolwiek]" << std::endl;
 	char c;
+	std::string tmp;
 	std::cin >> c;
+	std::getline(std::cin, tmp);
 	if (c == 'T') {
 		std::cout << "Ale czy aby na pewno, na pewno??? [TAK/cokolwiek]" << std::endl;
 		std::string del;
@@ -583,7 +602,7 @@ void deleteAllObjectsMenu(gravityField*& gravField) {
 		if (del == "TAK") {
 			delete gravField;
 			gravField = new gravityField;
-			std::cout << "OK - usuniêto" << std::endl;
+			std::cout << "OK - usunieto" << std::endl;
 			return;
 		}
 	}
@@ -598,21 +617,23 @@ INIT
 int init(void) {
 	gravityField* gravField = new gravityField;
 	char choice;
+	std::string tmp;
 	std::cout << "Witaj w programie Planety:" << std::endl;
 	do {
 		do {
+			std::cout << std::endl;
 			std::cout << "0 - Dodaj obiekt" << std::endl;
-			std::cout << "1 - Usuñ obiekt" << std::endl;
+			std::cout << "1 - Usun obiekt" << std::endl;
 			std::cout << "2 - Modyfikuj obiekt" << std::endl;
-			std::cout << "3 - Wyœwietl obiekty" << std::endl;
-			std::cout << "4 - Rozpocznij symulacjê" << std::endl;
-			std::cout << "5 - Zapisz konfiguracjê do pliku" << std::endl;
-			std::cout << "6 - Wczytaj konfiguracjê z pliku" << std::endl;
-			std::cout << "7 - Usuñ wszystkie obiekty" << std::endl;
-			std::cout << "9 - WyjdŸ" << std::endl;
+			std::cout << "3 - Wyswietl obiekty" << std::endl;
+			std::cout << "4 - Rozpocznij symulacje" << std::endl;
+			std::cout << "5 - Zapisz konfiguracje do pliku" << std::endl;
+			std::cout << "6 - Wczytaj konfiguracje z pliku" << std::endl;
+			std::cout << "7 - Usun wszystkie obiekty" << std::endl;
+			std::cout << "9 - Wyjdz" << std::endl;
 			std::cin >> choice;
+			std::getline(std::cin, tmp);
 		} while (choice < '0' || choice > '9' || choice == '8');
-		
 		switch (choice) {
 		case '0':
 			addObjectMenu(gravField);
@@ -624,8 +645,10 @@ int init(void) {
 			modifyObjectMenu(gravField);
 			break;
 		case '3':
-			std::cout << "Lista obiektów:" << std::endl;
-			std::cout << "Nazwa,Masa,Œrednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+			std::cout << std::endl;
+			std::cout << "Lista obiektow:" << std::endl;
+			std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
+			std::cout << std::endl;
 			gravField->printObjectsList(std::cout);
 			break;
 		case '4':
@@ -659,5 +682,6 @@ using namespace std;
 int main(void)
 {
 	init();
+
 	system("pause");
 }
