@@ -85,21 +85,22 @@ public:
 int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
-	std::cout << std::setprecision(4);
-	std::cout << obj.getName() << std::endl;
-	std::cout << "m:  " << obj.getMass() << std::endl;
-	std::cout << "d:  " << obj.getDiameter() << std::endl;
-	std::cout << "x:  " << obj.getX() << std::endl;
-	std::cout << "y:  " << obj.getY() << std::endl;
-	std::cout << "z:  " << obj.getZ() << std::endl;
-	std::cout << "Vx: " << obj.getVx() << std::endl;
-	std::cout << "Vy: " << obj.getVy() << std::endl;
-	std::cout << "Vz: " << obj.getVz() << std::endl;
-	std::cout << "ax: " << obj.getAx() << std::endl;
-	std::cout << "ay: " << obj.getAy() << std::endl;
-	std::cout << "az: " << obj.getAz() << std::endl;
-	std::cout << std::defaultfloat;
-	return std::cout;
+	out << std::setprecision(3);
+	out << std::fixed;
+	out << obj.getName() << std::endl;
+	out << "m:  " << obj.getMass() << std::endl;
+	out << "d:  " << obj.getDiameter() << std::endl;
+	out << "x:  " << obj.getX() << std::endl;
+	out << "y:  " << obj.getY() << std::endl;
+	out << "z:  " << obj.getZ() << std::endl;
+	out << "Vx: " << obj.getVx() << std::endl;
+	out << "Vy: " << obj.getVy() << std::endl;
+	out << "Vz: " << obj.getVz() << std::endl;
+	out << "ax: " << obj.getAx() << std::endl;
+	out << "ay: " << obj.getAy() << std::endl;
+	out << "az: " << obj.getAz() << std::endl;
+	out << std::defaultfloat;
+	return out;
 }
 
 std::string flyingObject::shortDescription(int prec) {
@@ -117,8 +118,6 @@ std::string flyingObject::shortDescription(int prec) {
 	{ strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString; }
 	{ strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString; }
 	{ strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString; }
-	if (prec >= 0)
-		strm << std::defaultfloat;
 	return retString;
 }
 void flyingObject::updateAcceleration(double Ex, double Ey, double Ez) {
@@ -219,8 +218,6 @@ std::string rocket::shortDescription(int prec) {
 	{ strm.str(""); strm.clear(); strm << Fxe; tempString = strm.str(); retString += ',' + tempString; }
 	{ strm.str(""); strm.clear(); strm << Fye; tempString = strm.str(); retString += ',' + tempString; }
 	{ strm.str(""); strm.clear(); strm << Fze; tempString = strm.str(); retString += ',' + tempString; }
-	if (prec >= 0)
-		strm << std::defaultfloat;
 	return retString;
 }
 
@@ -487,6 +484,7 @@ void addObjectMenu(gravityField* gravField) {
 			made = nullptr;
 		}
 		if (made) {
+			std::cout << std::endl;
 			std::cout << "Dodano obiekt: " << made->shortDescription() << std::endl;
 		}
 	}
@@ -500,6 +498,7 @@ void deleteObjectMenu(gravityField* gravField) {
 	std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
 	std::cout << std::endl;
 	gravField->printObjectsList(std::cout);
+	std::cout << std::endl;
 	std::cout << "Podaj nazwe obiektu, ktory chcesz usunac, lub nacisnij Enter by wyjsc" << std::endl;
 	std::string name;
 	std::getline(std::cin, name);
@@ -517,6 +516,7 @@ void modifyObjectMenu(gravityField* gravField) {
 	std::cout << "Nazwa,Masa,Srednica,x,y,z,Vx,Vy,Vz[,Fx,Fy,Fz]" << std::endl;
 	std::cout << std::endl;
 	gravField->printObjectsList(std::cout);
+	std::cout << std::endl;
 	std::cout << "Podaj nazwe obiektu, ktory chcesz zmodyfikowac, lub Enter by wyjsc" << std::endl;
 	std::string name;
 	std::getline(std::cin, name);
@@ -545,7 +545,9 @@ void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = 15;
 	start_clock = clock();
-	while (1) {
+	std::cout << "Naciœnij Enter, by rozpocz¹æ symulacjê, podczas symulacji naciœnij Escape by przerwaæ." << std::endl;
+	system("pause");
+	while (!(GetAsyncKeyState(VK_ESCAPE))) {
 		system("cls");
 		gravField->printObjects();
 		gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
