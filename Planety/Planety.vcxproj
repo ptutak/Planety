@@ -110,7 +110,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="OpenGLFunctions.cpp" />
     <ClCompile Include="Planety.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Planety.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
