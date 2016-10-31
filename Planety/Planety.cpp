@@ -106,7 +106,6 @@ std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
 std::string flyingObject::shortDescription(int prec) {
 	std::string retString, tempString;
 	std::stringstream strm;
-	double num;
 	retString = name;
 	if (prec >= 0)
 		strm << std::setprecision(prec);
@@ -203,7 +202,6 @@ void rocket::recalculateEngineAcceleration(void) {
 std::string rocket::shortDescription(int prec) {
 	std::string retString, tempString;
 	std::stringstream strm;
-	double num;
 	retString = name;
 	if (prec >= 0)
 		strm << std::setprecision(prec);
@@ -388,7 +386,6 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			double number = 0.0;
 			std::stringstream data(line);
 			data >> number;
-			std::cout << number;
 			if (number != 0.0)
 				tmpObject->setY(number);
 		}
@@ -398,7 +395,6 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			double number = 0.0;
 			std::stringstream data(line);
 			data >> number;
-			std::cout << number;
 			if (number != 0.0)
 				tmpObject->setZ(number);
 		}
@@ -545,14 +541,17 @@ void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = 15;
 	start_clock = clock();
-	std::cout << "Naciœnij Enter, by rozpocz¹æ symulacjê, podczas symulacji naciœnij Escape by przerwaæ." << std::endl;
+	system("cls");
+	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	system("pause");
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
 		system("cls");
 		gravField->printObjects();
 		gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
 		std::cout << dif;
-		dif = clock() - start_clock;	//kontrola czasu - obliczanie czasu ostatniej iteracji
+		do
+			dif = clock() - start_clock;
+		while (dif < 100);//kontrola czasu - obliczanie czasu ostatniej iteracji
 		start_clock = clock();			//pocz¹tek liczenia czasu kolejnej iteracji
 	}
 }
@@ -608,23 +607,36 @@ void readFromFileMenu(gravityField* gravField) {
 
 void deleteAllObjectsMenu(gravityField*& gravField) {
 	std::cout << std::endl;
-	std::cout << "Czy na pewno chcesz usunac wszystkie obiekty? [T/cokolwiek]" << std::endl;
+	std::cout << "Czy na pewno chcesz usunac wszystkie obiekty? [tT/cokolwiek]" << std::endl;
 	char c;
 	std::string tmp;
 	std::cin >> c;
 	std::getline(std::cin, tmp);
-	if (c == 'T') {
-		std::cout << "Ale czy aby na pewno, na pewno??? [TAK/cokolwiek]" << std::endl;
-		std::string del;
-		std::cin >> del;
-		if (del == "TAK") {
+	if (c == 'T' || c=='t') {
 			delete gravField;
 			gravField = new gravityField;
 			std::cout << "OK - usunieto" << std::endl;
 			return;
-		}
 	}
 	std::cout << "Nie usuwam" << std::endl;
+}
+
+void developerModeMenu(gravityField* gravField) {
+	std::cout << "Podaj czas obliczen w s:" << std::endl;
+	double time;
+	std::cin >> time;
+	std::cout << "Podaj wielkosc ramki w ms:" << std::endl;
+	int frame;
+	std::cin >> frame;
+	double currentTime = 0.0;
+	double newFrame = frame / static_cast<double>(1000);
+	while (currentTime < time) {
+		gravField->computeGravity(newFrame);
+		currentTime += newFrame;
+	}
+	gravField->printObjects();
+	std::string tmp;
+	std::getline(std::cin, tmp);
 }
 /*
 
@@ -647,11 +659,12 @@ int init(void) {
 			std::cout << "4 - Rozpocznij symulacje" << std::endl;
 			std::cout << "5 - Zapisz konfiguracje do pliku" << std::endl;
 			std::cout << "6 - Wczytaj konfiguracje z pliku" << std::endl;
-			std::cout << "7 - Usun wszystkie obiekty" << std::endl;
+			std::cout << "7 - Wyczysc obiekty" << std::endl;
+			std::cout << "8 - Deweloper mode" << std::endl;
 			std::cout << "9 - Wyjdz" << std::endl;
 			choice = std::cin.peek();
 			std::getline(std::cin, tmp);
-		} while (choice < '0' || choice > '9' || choice == '8');
+		} while (choice < '0' || choice > '9');
 		switch (choice) {
 		case '0':
 			addObjectMenu(gravField);
@@ -681,7 +694,11 @@ int init(void) {
 		case '7':
 			deleteAllObjectsMenu(gravField);
 			break;
+		case '8':
+			developerModeMenu(gravField);
+			break;
 		case '9':
+			delete gravField;
 			std::cout << "Goodbye" << std::endl;
 			return 0;
 		}
@@ -695,11 +712,24 @@ MAIN
 */
 
 
-/*
+
 using namespace std;
 int main(void)
 {
-	init();
+//	init();
+	clock_t t,time=0;
+	std::cout << "start" << std::endl;
+	system("pause");
+	clock_t start = clock();
+	while (1)
+	{
+		do
+			t = clock()-start;
+		while (t < 100);
+		start = clock();
+		system("cls");
+		time += t;
+		std::cout << time / static_cast<double>(CLOCKS_PER_SEC) << std::endl;
+	}
 	system("pause");
 }
-*/
