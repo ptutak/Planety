@@ -540,10 +540,10 @@ void modifyObjectMenu(gravityField* gravField) {
 void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = 15;
-	start_clock = clock();
 	system("cls");
 	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	system("pause");
+	start_clock = clock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
 		system("cls");
 		gravField->printObjects();
@@ -551,7 +551,7 @@ void startSimulationMenu(gravityField* gravField) {
 		std::cout << dif;
 		do
 			dif = clock() - start_clock;
-		while (dif < 100);//kontrola czasu - obliczanie czasu ostatniej iteracji
+		while (dif < 100);				//kontrola czasu - obliczanie czasu ostatniej iteracji
 		start_clock = clock();			//pocz¹tek liczenia czasu kolejnej iteracji
 	}
 }
@@ -716,8 +716,8 @@ MAIN
 using namespace std;
 int main(void)
 {
-//	init();
-	clock_t t,time=0;
+	init();
+/*	clock_t t,time=0;
 	std::cout << "start" << std::endl;
 	system("pause");
 	clock_t start = clock();
@@ -731,5 +731,6 @@ int main(void)
 		time += t;
 		std::cout << time / static_cast<double>(CLOCKS_PER_SEC) << std::endl;
 	}
+	*/
 	system("pause");
 }
