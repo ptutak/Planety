@@ -695,10 +695,11 @@ MAIN
 */
 
 
-
+/*
 using namespace std;
 int main(void)
 {
 	init();
 	system("pause");
 }
+*/
