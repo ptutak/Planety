@@ -19,6 +19,7 @@ char *window_title = "Sample OpenGL FreeGlut App";
 //-------------------------------------------------------------------------
 //  Program Main method.
 //-------------------------------------------------------------------------
+/*
 void main(int argc, char **argv)
 {
 	//  Connect to the windowing system + create a window
@@ -40,7 +41,7 @@ void main(int argc, char **argv)
 	//  Start GLUT event processing loop
 	glutMainLoop();
 }
-
+*/
 //-------------------------------------------------------------------------
 //  Set OpenGL program initial state.
 //-------------------------------------------------------------------------
