@@ -731,7 +731,7 @@ MAIN
 using namespace std;
 int main(void)
 {
-//	init();
+	init();
 
 	system("pause");
 }
