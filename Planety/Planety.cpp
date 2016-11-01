@@ -15,7 +15,7 @@
 // CONSTANTS
 
 constexpr double G = 6.6740831e-11;
-constexpr int FRAME_SIZE = 15;
+constexpr int FRAME_SIZE = 10;
 
 
 /*
@@ -541,26 +541,33 @@ void modifyObjectMenu(gravityField* gravField) {
 void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = FRAME_SIZE;
-	int multiplier = 1,initialMultiplier;
+	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
+	int multiplier,initialMultiplier=1;
 	system("cls");
 	//TODO:
 	//MULTIPLIER
+	std::cout << "Podaj szybkosc symulacji w krotnosci czasu (np. 1,2,3...) lub nacisnij Enter (domyslnie 1)" << std::endl;
+	{
+		std::string tmp;
+		std::getline(std::cin, tmp);
+		std::istringstream tmpstr(tmp);
+		tmpstr >> initialMultiplier;
+	}
+	multiplier = initialMultiplier;
+	std::cout << "Mnoznik czasu:" << initialMultiplier << std::endl;
 	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	system("pause");
 	start_clock = clock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
-		system("cls");
-		gravField->printObjects();
 		do {
-			gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
+			gravField->computeGravity(frSiz);
 			--multiplier;
 		} while (multiplier);
 		multiplier = initialMultiplier;
-		std::cout << dif;
 		do
 			dif = clock() - start_clock;
-		while (dif < FRAME_SIZE*multiplier);				//kontrola czasu - obliczanie czasu ostatniej iteracji
-		start_clock = clock();			//pocz¹tek liczenia czasu kolejnej iteracji
+		while (dif < FRAME_SIZE);
+		start_clock = clock();					//pocz¹tek liczenia czasu kolejnej iteracji
 	}
 }
 
@@ -724,21 +731,7 @@ MAIN
 using namespace std;
 int main(void)
 {
-	init();
-/*	clock_t t,time=0;
-	std::cout << "start" << std::endl;
-	system("pause");
-	clock_t start = clock();
-	while (1)
-	{
-		do
-			t = clock()-start;
-		while (t < 100);
-		start = clock();
-		system("cls");
-		time += t;
-		std::cout << time / static_cast<double>(CLOCKS_PER_SEC) << std::endl;
-	}
-	*/
+//	init();
+
 	system("pause");
 }
