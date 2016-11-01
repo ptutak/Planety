@@ -15,6 +15,7 @@
 // CONSTANTS
 
 constexpr double G = 6.6740831e-11;
+constexpr int FRAME_SIZE = 15;
 
 
 /*
@@ -278,10 +279,10 @@ void gravityField::computeGravity(double dt) {
 			if (i == j)
 				continue;
 			else {
-				double iDisj = i->distance(*j);
-				if (iDisj) {
-					double iDisjSq = i->distanceSquared(*j);
-					double MGRRR = G*j->m / (iDisjSq * iDisj);
+				double iDisjSq = i->distanceSquared(*j);
+				if (iDisjSq) {
+				//	double iDisjSq = i->distanceSquared(*j);
+					double MGRRR = G*j->m / (iDisjSq * sqrt(iDisjSq));
 					/*
 					Debug option:
 					std::cout <<"iDisj " <<iDisj << std::endl;
@@ -539,19 +540,26 @@ void modifyObjectMenu(gravityField* gravField) {
 
 void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
-	clock_t dif = 15;
+	clock_t dif = FRAME_SIZE;
+	int multiplier = 1,initialMultiplier;
 	system("cls");
+	//TODO:
+	//MULTIPLIER
 	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	system("pause");
 	start_clock = clock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
 		system("cls");
 		gravField->printObjects();
-		gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
+		do {
+			gravField->computeGravity(static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC));
+			--multiplier;
+		} while (multiplier);
+		multiplier = initialMultiplier;
 		std::cout << dif;
 		do
 			dif = clock() - start_clock;
-		while (dif < 100);				//kontrola czasu - obliczanie czasu ostatniej iteracji
+		while (dif < FRAME_SIZE*multiplier);				//kontrola czasu - obliczanie czasu ostatniej iteracji
 		start_clock = clock();			//pocz¹tek liczenia czasu kolejnej iteracji
 	}
 }
