@@ -1,5 +1,3 @@
-#include <iomanip>
-#include <sstream>
 #include "PlanetyClasses.h"
 
 /*
@@ -150,7 +148,7 @@ void gravityField::addObject(flyingObject* next) {
 	objects.push_back(next);
 }
 void gravityField::computeGravity(double dt) {
-	std::lock_guard<std::mutex> lg(writePosMutex);
+	std::lock_guard<std::mutex> lg(writeMutex);
 	for (auto i : objects) {
 		double Ex = 0.0;
 		double Ey = 0.0;

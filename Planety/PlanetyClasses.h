@@ -5,12 +5,14 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 // CONSTANTS
 constexpr double G = 6.6740831e-11;
 
 // MUTEX
-std::mutex writePosMutex;
+std::mutex writeMutex;
 
 /*
 

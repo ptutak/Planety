@@ -1,9 +1,3 @@
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <Windows.h>
-#include "PlanetyClasses.h"
 #include "Planety.h"
 
 //CONSTANTS
@@ -298,6 +292,7 @@ void deleteAllObjectsMenu(gravityField*& gravField) {
 	std::cin >> c;
 	std::getline(std::cin, tmp);
 	if (c == 'T' || c=='t') {
+			std::lock_guard<std::mutex> lg(writeMutex);
 			delete gravField;
 			gravField = new gravityField;
 			std::cout << "OK - usunieto" << std::endl;

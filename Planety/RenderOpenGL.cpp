@@ -1,4 +1,6 @@
-#include <GL\freeglut.h>
+#include "RenderOpenGL.h"
+
+
 
 void init();
 void display(void);
@@ -10,8 +12,8 @@ int window_x;
 int window_y;
 
 //  variables representing the window size
-int window_width = 480;
-int window_height = 480;
+int window_width = 1024;
+int window_height = 768;
 
 //  variable representing the window title
 char *window_title = "Sample OpenGL FreeGlut App";
