@@ -1,5 +1,19 @@
 #include "RenderOpenGL.h"
 
+void startRendering(gravityField* gravField) {
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 void init();

@@ -205,6 +205,14 @@ void modifyObjectMenu(gravityField* gravField) {
 }
 
 void startSimulationMenu(gravityField* gravField) {
+
+	try {
+		std::thread renderingThread(startRendering, gravField);
+		renderingThread.detach();
+	}
+	catch (const std::exception x) {
+		std::cerr << "Nastapil wyjatek:" << x.what() << std::endl;
+	}
 	clock_t start_clock;
 	clock_t dif = FRAME_SIZE;
 	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
@@ -325,10 +333,7 @@ INIT
 */
 
 void init(void) {
-	
 	gravityField* gravField = new gravityField;
-
-
 	char choice;
 	std::string tmp;
 	std::cout << "Witaj w programie Planety:" << std::endl;
@@ -386,4 +391,5 @@ void init(void) {
 			return;
 		}
 	} while (1);
+
 }

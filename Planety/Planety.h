@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <Windows.h>
+#include <thread>
 #include "PlanetyClasses.h"
 #include "RenderOpenGL.h"
 
