@@ -110,11 +110,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="OpenGLFunctions.cpp" />
+    <ClCompile Include="RenderOpenGL.cpp" />
     <ClCompile Include="Planety.cpp" />
+    <ClCompile Include="PlanetyClasses.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Planety.h" />
+    <ClInclude Include="PlanetyClasses.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
