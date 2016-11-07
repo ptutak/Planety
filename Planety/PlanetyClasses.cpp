@@ -5,6 +5,7 @@
 CLASS FLYING OBJECT
 
 */
+int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
 	out << std::setprecision(3);
@@ -200,6 +201,10 @@ bool gravityField::searchObject(const std::string name) const {
 	}
 	return false;
 }
+
+gravityField::gravityField(void) {
+}
+
 gravityField::~gravityField(void) {
 	while (!objects.empty()) {
 		delete objects.front();

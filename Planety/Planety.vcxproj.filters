@@ -35,6 +35,9 @@
     <ClInclude Include="Planety.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderOpenGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

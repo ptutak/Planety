@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClInclude Include="Planety.h" />
     <ClInclude Include="PlanetyClasses.h" />
+    <ClInclude Include="RenderOpenGL.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

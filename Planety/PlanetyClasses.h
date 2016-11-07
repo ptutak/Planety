@@ -11,9 +11,6 @@
 // CONSTANTS
 constexpr double G = 6.6740831e-11;
 
-// MUTEX
-std::mutex writeMutex;
-
 /*
 
 CLASS FLYING OBJECT
@@ -79,8 +76,6 @@ public:
 	virtual ~flyingObject(void) {}
 };
 
-int flyingObject::oNumber = 0;
-
 std::ostream& operator<<(std::ostream& out, const flyingObject obj);
 
 /*
@@ -129,6 +124,8 @@ class gravityField
 private:
 	std::list<flyingObject*> objects;
 public:
+	std::mutex writeMutex;
+
 	void addObject(flyingObject* next);
 	void computeGravity(double dt);
 	void printObjects(void) const;
@@ -137,6 +134,6 @@ public:
 	bool searchObject(const std::string name) const;
 
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
-
+	gravityField(void);
 	~gravityField(void);
 };

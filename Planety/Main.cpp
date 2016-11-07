@@ -4,7 +4,8 @@
 using namespace std;
 int main(void)
 {
-	init();
+//	init();
+	startRendering(nullptr);
 
 	system("pause");
 }
