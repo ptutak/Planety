@@ -121,8 +121,9 @@ CLASS GRAVITY FIELD
 
 class gravityField
 {
-private:
+public:
 	std::list<flyingObject*> objects;
+
 public:
 	std::mutex writeMutex;
 

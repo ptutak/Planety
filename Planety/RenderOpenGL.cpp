@@ -1,4 +1,6 @@
 #include "RenderOpenGL.h"
+#include <cstdio>
+#include <string>
 enum
 {
 	FULL_WINDOW, // aspekt obrazu - ca³e okno
@@ -70,6 +72,7 @@ void origin(void) {
 	glVertex3d(0.3, 0.0, 0.7);
 
 	glEnd();
+
 	glColor3f(1.0, 0.0, 0.0);
 	glRasterPos3d(1.0, -0.25, -0.25);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('x'));
@@ -79,7 +82,24 @@ void origin(void) {
 	glColor3f(0.0, 1.0, 0.0);
 	glRasterPos3d(-0.25, -0.25, 1.0);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('z'));
+
 	glLineWidth(1.0);
+}
+
+void drawString(void * font, char *s, int x, int y, double z) {
+	GLdouble xx = (right - left) / glutGet(GLUT_WINDOW_WIDTH)*static_cast<GLdouble>(x) + left;
+	GLdouble yy = (top - bottom) / glutGet(GLUT_WINDOW_HEIGHT)*static_cast<GLdouble>(y) + top;
+	
+	if (aspect == ASPECT_1_1) {
+		if ((glutGet(GLUT_WINDOW_WIDTH) < glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_WIDTH) > 0)
+			yy = yy*glutGet(GLUT_WINDOW_HEIGHT) / glutGet(GLUT_WINDOW_WIDTH);
+		else if ((glutGet(GLUT_WINDOW_WIDTH) >= glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_HEIGHT) > 0)
+			xx = xx*glutGet(GLUT_WINDOW_WIDTH) / glutGet(GLUT_WINDOW_HEIGHT);
+	}
+
+	glRasterPos3d(xx, yy, z);
+	for (unsigned int i = 0; i < strlen(s); i++)
+		glutBitmapCharacter(font, s[i]);
 }
 
 void display(void) {
@@ -90,29 +110,33 @@ void display(void) {
 
 	glTranslated(0, 0, -(_near + _far) / 2);
 
-	glPushMatrix();
+	glColor3d(0.0, 0.0, 0.0);
+	drawString(GLUT_BITMAP_HELVETICA_12, "test",0 , 0,_near);
 
-	glScaled(3.0, 3.0, 3.0);
+	glPushMatrix();
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
+	glScaled(3.0, 3.0, 3.0);
 	origin();
 	glPopMatrix();
-
+	
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
 
 	glTranslated(translatex, translatey, translatez);
-	
+
 	glScaled(scale, scale, scale);
-
-
-
-
-	glColor3f(0.0, 0.0, 0.0);
-	glutWireCylinder(1.0, 2.0, 30, 5);
 	
+	glColor3f(0.0, 0.0, 0.0);
+	
+
+
+//	glutSolidCylinder(1.0, 2.0, 30, 5);
+	
+	
+
 	glFlush();
 	glutSwapBuffers();
 }
@@ -148,22 +172,22 @@ void specialKeys(int key, int x, int y)
 {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		rotatey -= 1.5;
+		translatex -= 0.7;
 		break;
 	case GLUT_KEY_RIGHT:
-		rotatey += 1.5;
+		translatex += 0.7;
 		break;
 	case GLUT_KEY_UP:
-		rotatex -= 1.5;
+		translatey += 0.7;
 		break;
 	case GLUT_KEY_DOWN:
-		rotatex += 1.5;
+		translatey -= 0.7;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		translatez += 1.0;
+		translatez += 0.7;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		translatez -= 1.0;
+		translatez -= 0.7;
 		break;
 	}
 	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
@@ -183,9 +207,9 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) 
 			return;
 		if (button == 3)
-			scale += 0.1;
+			scale += 0.05;
 		if (button == 4)
-			scale -= 0.1;
+			scale -= 0.05;
 		if (scale < 0)
 			scale = 0.0;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
@@ -195,12 +219,12 @@ void mouseButton(int button, int state, int x, int y) {
 void mouseMotion(int x, int y) {
 	if (button_state == GLUT_DOWN)
 	{
-		translatex += 1.4 *(right - left) / glutGet(GLUT_WINDOW_WIDTH) *(x - button_x);
-		button_x = x;
-		translatey += 1.4 *(top - bottom) / glutGet(GLUT_WINDOW_HEIGHT) *(button_y - y);
+		rotatex += 5.0 * (bottom - top) / glutGet(GLUT_WINDOW_HEIGHT) *(y - button_y);
 		button_y = y;
-		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 
+		rotatey += 5.0 * (right - left) / glutGet(GLUT_WINDOW_WIDTH) *(x - button_x);
+		button_x = x;
+		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
 void menu(int value)
@@ -227,7 +251,7 @@ void menu(int value)
 void startRendering(gravityField* gravField) {
 	glutInit(&argcp, &argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(500,500);
+	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH),static_cast<int>(glutGet(GLUT_SCREEN_HEIGHT)*0.94));
 	glutCreateWindow("test 1");
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
