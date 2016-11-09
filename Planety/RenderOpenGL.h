@@ -3,4 +3,4 @@
 #include <GL\GL.h>
 #include "PlanetyClasses.h"
 
-void startRendering(gravityField* gravField);
+void startRendering(gravityField** gravField);

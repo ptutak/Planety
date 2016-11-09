@@ -5,7 +5,8 @@ using namespace std;
 int main(void)
 {
 //	init();
-	startRendering(nullptr);
+	gravityField* tmp=new gravityField;
+	startRendering(&tmp);
 
 	system("pause");
 }

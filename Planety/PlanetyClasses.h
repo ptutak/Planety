@@ -121,7 +121,12 @@ CLASS GRAVITY FIELD
 
 class gravityField
 {
-public:
+	double maxX;
+	double minX;
+	double maxY;
+	double minY;
+	double maxZ;
+	double minZ;
 	std::list<flyingObject*> objects;
 
 public:
@@ -134,7 +139,14 @@ public:
 	void removeObject(const std::string name);
 	bool searchObject(const std::string name) const;
 
+	double getMaxX(void) const { return maxX; }
+	double getMinX(void) const { return minX; }
+	double getMaxY(void) const { return maxY; }
+	double getMinY(void) const { return minY; }
+	double getMaxZ(void) const { return maxZ; }
+	double getMinZ(void) const { return minZ; }
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
-	gravityField(void);
+	
+	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 } {};
 	~gravityField(void);
 };

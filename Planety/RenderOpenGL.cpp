@@ -3,22 +3,16 @@
 #include <string>
 enum
 {
-	FULL_WINDOW, // aspekt obrazu - ca³e okno
-	ASPECT_1_1, // aspekt obrazu 1:1
-	WIRE_SPHERE, // kula
-	WIRE_CONE, // sto¿ek
+	AUTOMATIC_CAMERA, // aspekt obrazu - ca³e okno
+	MANUAL_CAMERA, // aspekt obrazu 1:1
 	EXIT // wyjœcie
 };
 
-GLdouble eyex = 0;
-GLdouble eyey = 0;
-GLdouble eyez = 3;
+int aspect = MANUAL_CAMERA;
+int argcp = 0;
+char* argv = nullptr;
 
-GLdouble centerx = 0;
-GLdouble centery = 0;
-GLdouble centerz = 0;
-
-int aspect = ASPECT_1_1;
+gravityField** field = nullptr;
 
 GLdouble left = -10.0;
 GLdouble right = 10.0;
@@ -26,7 +20,7 @@ GLdouble bottom = -10.0;
 
 GLdouble top = 10.0;
 GLdouble _near = 50.0;
-GLdouble _far = 155.0;
+GLdouble _far = 13000.0;
 
 GLdouble scale = 1.0;
 
@@ -38,15 +32,24 @@ GLdouble translatex = 0.0;
 GLdouble translatey = 0.0;
 GLdouble translatez = 0.0;
 
-int button_state = GLUT_UP;
+int buttonState = GLUT_UP;
+int mouseButtonX;
+int mouseButtonY;
 
-// po³o¿enie kursora myszki
+void setGravField(gravityField** gravField) {
+	field = gravField;
+}
 
-int button_x, button_y;
-
-int argcp = 0;
-char* argv = nullptr;
-
+void drawCircle(double radius)
+{
+	const double DEG2RAD = 3.14159 / 180;
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < 360; i++) {
+		double degInRad = i*DEG2RAD;
+		glVertex3d(cos(degInRad)*radius, sin(degInRad)*radius,0.0);
+	}
+	glEnd();
+}
 void origin(void) {
 	glLineWidth(3.0);
 	glBegin(GL_LINES);
@@ -55,51 +58,52 @@ void origin(void) {
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(1.0, 0.0, 0.0);
 	glVertex3d(1.0, 0.0, 0.0);
-	glVertex3d(0.7, 0.3, 0.0);
+	glVertex3d(0.7, 0.15, 0.0);
 	
 	glColor3f(0.0, 0.0, 1.0);
 
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(0.0, 1.0, 0.0);
 	glVertex3d(0.0, 1.0, 0.0);
-	glVertex3d(0.0, 0.7, 0.3);
+	glVertex3d(0.0, 0.7, 0.15);
 
 	glColor3f(0.0, 1.0, 0.0);
 
 	glVertex3d(0.0, 0.0, 1.0);
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(0.0, 0.0, 1.0);
-	glVertex3d(0.3, 0.0, 0.7);
+	glVertex3d(0.15, 0.0, 0.7);
 
 	glEnd();
+	glLineWidth(1.0);
 
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3d(1.0, 0.0, 0.0);
 	glRasterPos3d(1.0, -0.25, -0.25);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('x'));
-	glColor3f(0.0, 0.0, 1.0);
+	glColor3d(0.0, 0.0, 1.0);
 	glRasterPos3d(-0.25, 1.0, -0.25);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('y'));
-	glColor3f(0.0, 1.0, 0.0);
+	glColor3d(0.0, 1.0, 0.0);
 	glRasterPos3d(-0.25, -0.25, 1.0);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('z'));
-
-	glLineWidth(1.0);
 }
 
-void drawString(void * font, char *s, int x, int y, double z) {
+void drawString(void * font, char *s, int x, int y) {
 	GLdouble xx = (right - left) / glutGet(GLUT_WINDOW_WIDTH)*static_cast<GLdouble>(x) + left;
 	GLdouble yy = (top - bottom) / glutGet(GLUT_WINDOW_HEIGHT)*static_cast<GLdouble>(y) + top;
 	
-	if (aspect == ASPECT_1_1) {
+	if (aspect == MANUAL_CAMERA) {
 		if ((glutGet(GLUT_WINDOW_WIDTH) < glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_WIDTH) > 0)
 			yy = yy*glutGet(GLUT_WINDOW_HEIGHT) / glutGet(GLUT_WINDOW_WIDTH);
 		else if ((glutGet(GLUT_WINDOW_WIDTH) >= glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_HEIGHT) > 0)
 			xx = xx*glutGet(GLUT_WINDOW_WIDTH) / glutGet(GLUT_WINDOW_HEIGHT);
 	}
-
-	glRasterPos3d(xx, yy, z);
+	glPushMatrix();
+	glLoadIdentity();
+	glRasterPos3d(xx, yy, -_near-0.05);
 	for (unsigned int i = 0; i < strlen(s); i++)
 		glutBitmapCharacter(font, s[i]);
+	glPopMatrix();
 }
 
 void display(void) {
@@ -111,43 +115,60 @@ void display(void) {
 	glTranslated(0, 0, -(_near + _far) / 2);
 
 	glColor3d(0.0, 0.0, 0.0);
-	drawString(GLUT_BITMAP_HELVETICA_12, "test",0 , 0,_near);
+	drawString(GLUT_BITMAP_HELVETICA_12, "test",10 ,-10);
+	drawString(GLUT_BITMAP_HELVETICA_12, "drugi wiersz", 10, -22);
 
-	glPushMatrix();
-	glRotated(rotatex, 1.0, 0.0, 0.0);
-	glRotated(rotatey, 0.0, 1.0, 0.0);
-	glRotated(rotatez, 0.0, 0.0, 1.0);
-	glScaled(3.0, 3.0, 3.0);
-	origin();
-	glPopMatrix();
-	
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
 
 	glTranslated(translatex, translatey, translatez);
-
+	glPushMatrix();
+	glScaled((_near+_far)/(2*_near), (_near + _far) / (2 * _near), (_near + _far) / (2 * _near));
+	origin();
+	glPopMatrix();
 	glScaled(scale, scale, scale);
 	
-	glColor3f(0.0, 0.0, 0.0);
-	
+	glColor3d(0.0, 0.0, 0.0);
 
-
-//	glutSolidCylinder(1.0, 2.0, 30, 5);
-	
-	
 
 	glFlush();
 	glutSwapBuffers();
 }
 
+void calculateScene(void) {
+	double maxX= (*field)->getMaxX();
+	double maxY = (*field)->getMaxY();
+	double maxZ = (*field)->getMaxZ();
+	double minX = (*field)->getMinX();
+	double minY = (*field)->getMinY();
+	double minZ = (*field)->getMinZ();
+	double maxSize = abs(maxX);
+	if (abs(maxY) > maxSize)
+		maxSize = abs(maxY);
+	if (abs(maxZ) > maxSize)
+		maxSize = abs(maxZ);
+	if (abs(minX) > maxSize)
+		maxSize = abs(minX);
+	if (abs(minY) > maxSize)
+		maxSize = abs(minY);
+	if (abs(minZ) > maxSize)
+		maxSize = abs(minZ);
+	top = maxSize;
+	bottom = -maxSize;
+	right = maxSize;
+	left = -maxSize;
+	_far = 2 * maxSize + _near;
+}
+
 void reshape(int width, int height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
-
 	glLoadIdentity();
 
-	if (aspect == ASPECT_1_1) {
+//	calculateScene();
+
+	if (aspect == MANUAL_CAMERA) {
 		if (width < height && width > 0)
 			glFrustum(left, right, bottom * height / width,top * height / width, _near, _far);
 		else if (width >= height && height > 0)
@@ -196,11 +217,11 @@ void specialKeys(int key, int x, int y)
 void mouseButton(int button, int state, int x, int y) {
 	if (button == GLUT_LEFT_BUTTON)
 	{
-		button_state = state;
+		buttonState = state;
 		if (state == GLUT_DOWN)
 		{
-			button_x = x;
-			button_y = y;
+			mouseButtonX = x;
+			mouseButtonY = y;
 		}
 	}
 	else if ((button == 3) || (button == 4)) {
@@ -217,13 +238,13 @@ void mouseButton(int button, int state, int x, int y) {
 }
 
 void mouseMotion(int x, int y) {
-	if (button_state == GLUT_DOWN)
+	if (buttonState == GLUT_DOWN)
 	{
-		rotatex += 5.0 * (bottom - top) / glutGet(GLUT_WINDOW_HEIGHT) *(y - button_y);
-		button_y = y;
+		rotatex += 5.0 * (top- bottom) / glutGet(GLUT_WINDOW_HEIGHT) *(y - mouseButtonY);
+		mouseButtonY = y;
 
-		rotatey += 5.0 * (right - left) / glutGet(GLUT_WINDOW_WIDTH) *(x - button_x);
-		button_x = x;
+		rotatey += 5.0 * (right - left) / glutGet(GLUT_WINDOW_WIDTH) *(x - mouseButtonX);
+		mouseButtonX = x;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
@@ -231,44 +252,51 @@ void menu(int value)
 {
 	switch (value)
 	{
-		// obszar renderingu - ca³e okno
-	case FULL_WINDOW:
-		aspect = FULL_WINDOW;
+	case AUTOMATIC_CAMERA:
+		aspect = AUTOMATIC_CAMERA;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 		break;
-
-		// obszar renderingu - aspekt 1:1
-	case ASPECT_1_1:
-		aspect = ASPECT_1_1;
+	case MANUAL_CAMERA:
+		aspect = MANUAL_CAMERA;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 		break;
-		// wyjœcie
 	case EXIT:
 		exit(0);
 	}
 }
 
-void startRendering(gravityField* gravField) {
+void initFunc(void) {
 	glutInit(&argcp, &argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH),static_cast<int>(glutGet(GLUT_SCREEN_HEIGHT)*0.94));
-	glutCreateWindow("test 1");
+	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH), static_cast<int>(glutGet(GLUT_SCREEN_HEIGHT)*0.94));
+	glutCreateWindow("Planety");
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(specialKeys);
 	glutMouseFunc(mouseButton);
 	glutMotionFunc(mouseMotion);
-	int menuAspect=glutCreateMenu(menu);
-	glutAddMenuEntry("aspekt 1:1", ASPECT_1_1);
-	glutAddMenuEntry("cale okno", FULL_WINDOW);
+}
+
+void initMenu(void) {
+	int menuAspect = glutCreateMenu(menu);
+	glutAddMenuEntry("kamera manualna", MANUAL_CAMERA);
+	glutAddMenuEntry("kamera automatyczna", AUTOMATIC_CAMERA);
+
 	int menuObject = glutCreateMenu(menu);
 	// menu g³ówne
+
 	glutCreateMenu(menu);
 	glutAddSubMenu("Aspekt obrazu", menuAspect);
 	glutAddSubMenu("Obiekt", menuObject);
 	glutAddMenuEntry("Wyjscie", EXIT);
-	
+
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void startRendering(gravityField** gravField) {
+	setGravField(gravField);
+	initFunc();
+	initMenu();
 	glutMainLoop();
 }

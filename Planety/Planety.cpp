@@ -207,7 +207,7 @@ void modifyObjectMenu(gravityField* gravField) {
 void startSimulationMenu(gravityField* gravField) {
 
 	try {
-		std::thread renderingThread(startRendering, gravField);
+		std::thread renderingThread(startRendering, &gravField);
 		renderingThread.detach();
 	}
 	catch (const std::exception x) {
