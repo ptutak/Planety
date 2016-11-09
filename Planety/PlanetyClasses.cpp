@@ -5,6 +5,12 @@
 CLASS FLYING OBJECT
 
 */
+std::mutex readWriteMutex;
+
+std::mutex& getReadWriteMutex(void) {
+	return readWriteMutex;
+}
+
 int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
@@ -150,7 +156,7 @@ void gravityField::addObject(flyingObject* next) {
 }
 
 void gravityField::computeGravity(double dt) {
-	std::lock_guard<std::mutex> lg(writeMutex);
+	std::lock_guard<std::mutex> lg(readWriteMutex);
 	if (!objects.empty()) {
 		maxX = objects.front()->x;
 		minX = objects.front()->x;
@@ -158,39 +164,42 @@ void gravityField::computeGravity(double dt) {
 		minY = objects.front()->y;
 		maxZ = objects.front()->z;
 		minZ = objects.front()->z;
-	}
-	for (auto i : objects) {
-		double Ex = 0.0;
-		double Ey = 0.0;
-		double Ez = 0.0;
-		for (auto j : objects) {
-			if (i == j)
-				continue;
-			else {
-				double iDisjSq = i->distanceSquared(*j);
-				if (iDisjSq) {
-					double MGRRR = G*j->m / (iDisjSq * sqrt(iDisjSq));
-					Ex += (j->x - i->x) * MGRRR; //direction j-i
-					Ey += (j->y - i->y) * MGRRR;
-					Ez += (j->z - i->z) * MGRRR;
+		maxD = objects.front()->d;
+		for (auto i : objects) {
+			double Ex = 0.0;
+			double Ey = 0.0;
+			double Ez = 0.0;
+			for (auto j : objects) {
+				if (i == j)
+					continue;
+				else {
+					double iDisjSq = i->distanceSquared(*j);
+					if (iDisjSq) {
+						double MGRRR = G*j->m / (iDisjSq * sqrt(iDisjSq));
+						Ex += (j->x - i->x) * MGRRR; //direction j-i
+						Ey += (j->y - i->y) * MGRRR;
+						Ez += (j->z - i->z) * MGRRR;
+					}
 				}
 			}
+			i->updateAcceleration(Ex, Ey, Ez);
+			i->updatePosition(dt);
+			i->updateVelocity(dt);
+			if (i->x > maxX)
+				maxX = i->x;
+			else if (i->x < minX)
+				minX = i->x;
+			if (i->y > maxY)
+				maxY = i->y;
+			else if (i->y < minY)
+				minY = i->y;
+			if (i->z > maxZ)
+				maxZ = i->z;
+			else if (i->z < minZ)
+				minZ = i->z;
+			if (i->d > maxD)
+				maxD = i->d;
 		}
-		i->updateAcceleration(Ex, Ey, Ez);
-		i->updatePosition(dt);
-		i->updateVelocity(dt);
-		if (i->x > maxX)
-			maxX = i->x;
-		else if (i->x < minX)
-			minX = i->x;
-		if (i->y > maxY)
-			maxY = i->y;
-		else if (i->y < minY)
-			minY = i->y;
-		if (i->z > maxZ)
-			maxZ = i->z;
-		else if (i->z < minZ)
-			minZ = i->z;
 	}
 }
 

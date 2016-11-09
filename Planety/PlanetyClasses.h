@@ -8,6 +8,8 @@
 #include <iomanip>
 #include <sstream>
 
+std::mutex& getReadWriteMutex(void);
+
 // CONSTANTS
 constexpr double G = 6.6740831e-11;
 
@@ -127,11 +129,10 @@ class gravityField
 	double minY;
 	double maxZ;
 	double minZ;
+	double maxD;
 	std::list<flyingObject*> objects;
 
 public:
-	std::mutex writeMutex;
-
 	void addObject(flyingObject* next);
 	void computeGravity(double dt);
 	void printObjects(void) const;
@@ -145,6 +146,7 @@ public:
 	double getMinY(void) const { return minY; }
 	double getMaxZ(void) const { return maxZ; }
 	double getMinZ(void) const { return minZ; }
+	double getMaxD(void) const { return maxD; }
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
 	
 	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 } {};

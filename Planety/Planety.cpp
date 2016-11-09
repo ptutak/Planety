@@ -141,7 +141,7 @@ void addObjectMenu(gravityField* gravField) {
 		try {
 			gravField->addObject(made);
 		}
-		catch (const std::invalid_argument exc) {
+		catch (const std::invalid_argument& exc) {
 			std::cout << exc.what() << std::endl;
 			delete made;
 			made = nullptr;
@@ -210,7 +210,7 @@ void startSimulationMenu(gravityField* gravField) {
 		std::thread renderingThread(startRendering, &gravField);
 		renderingThread.detach();
 	}
-	catch (const std::exception x) {
+	catch (const threadExit& x) {
 		std::cerr << "Nastapil wyjatek:" << x.what() << std::endl;
 	}
 	clock_t start_clock;
@@ -300,7 +300,7 @@ void deleteAllObjectsMenu(gravityField*& gravField) {
 	std::cin >> c;
 	std::getline(std::cin, tmp);
 	if (c == 'T' || c=='t') {
-			std::lock_guard<std::mutex> lg(gravField->writeMutex);
+			std::lock_guard<std::mutex> lg(getReadWriteMutex());
 			delete gravField;
 			gravField = new gravityField;
 			std::cout << "OK - usunieto" << std::endl;

@@ -1,6 +1,7 @@
 #include "RenderOpenGL.h"
 #include <cstdio>
 #include <string>
+#include <thread>
 enum
 {
 	AUTOMATIC_CAMERA, // aspekt obrazu - ca³e okno
@@ -19,7 +20,7 @@ GLdouble right = 10.0;
 GLdouble bottom = -10.0;
 
 GLdouble top = 10.0;
-GLdouble _near = 50.0;
+GLdouble _near = 10.0;
 GLdouble _far = 13000.0;
 
 GLdouble scale = 1.0;
@@ -36,9 +37,6 @@ int buttonState = GLUT_UP;
 int mouseButtonX;
 int mouseButtonY;
 
-void setGravField(gravityField** gravField) {
-	field = gravField;
-}
 
 void drawCircle(double radius)
 {
@@ -88,11 +86,12 @@ void origin(void) {
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('z'));
 }
 
-void drawString(void * font, char *s, int x, int y) {
-	GLdouble xx = (right - left) / glutGet(GLUT_WINDOW_WIDTH)*static_cast<GLdouble>(x) + left;
-	GLdouble yy = (top - bottom) / glutGet(GLUT_WINDOW_HEIGHT)*static_cast<GLdouble>(y) + top;
-	
+void drawString(std::string s, int x, int y, void * font) {
+	GLdouble xx;
+	GLdouble yy;
 	if (aspect == MANUAL_CAMERA) {
+		xx = (right - left) / glutGet(GLUT_WINDOW_WIDTH)*static_cast<GLdouble>(x) + left;
+		yy = (top - bottom) / glutGet(GLUT_WINDOW_HEIGHT)*static_cast<GLdouble>(y) + top;
 		if ((glutGet(GLUT_WINDOW_WIDTH) < glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_WIDTH) > 0)
 			yy = yy*glutGet(GLUT_WINDOW_HEIGHT) / glutGet(GLUT_WINDOW_WIDTH);
 		else if ((glutGet(GLUT_WINDOW_WIDTH) >= glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_HEIGHT) > 0)
@@ -101,12 +100,20 @@ void drawString(void * font, char *s, int x, int y) {
 	glPushMatrix();
 	glLoadIdentity();
 	glRasterPos3d(xx, yy, -_near-0.05);
-	for (unsigned int i = 0; i < strlen(s); i++)
+	for (unsigned int i = 0; i < s.length(); i++)
 		glutBitmapCharacter(font, s[i]);
 	glPopMatrix();
 }
-
-void display(void) {
+void drawStream(std::istream& str,int x,int y, void* font, int fontSize) {
+	int line = 0;
+	while (!str.eof()) {
+		std::string tmp;
+		std::getline(str, tmp);
+		drawString(tmp, 5 + x,-8 + y-fontSize*line, font);
+		line++;
+	}
+}
+void initDisplayMatrixModeOriginBackground(void) {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
@@ -114,36 +121,57 @@ void display(void) {
 
 	glTranslated(0, 0, -(_near + _far) / 2);
 
-	glColor3d(0.0, 0.0, 0.0);
-	drawString(GLUT_BITMAP_HELVETICA_12, "test",10 ,-10);
-	drawString(GLUT_BITMAP_HELVETICA_12, "drugi wiersz", 10, -22);
-
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
 
 	glTranslated(translatex, translatey, translatez);
+
 	glPushMatrix();
-	glScaled((_near+_far)/(2*_near), (_near + _far) / (2 * _near), (_near + _far) / (2 * _near));
+	glScaled((_near + _far) / (2 * _near), (_near + _far) / (2 * _near), (_near + _far) / (2 * _near));
 	origin();
 	glPopMatrix();
+
 	glScaled(scale, scale, scale);
-	
+}
+
+void display(void) {
+	initDisplayMatrixModeOriginBackground();
+
 	glColor3d(0.0, 0.0, 0.0);
 
+	for (auto i : (*field)->getObjects()) {
+		std::lock_guard<std::mutex> lg(getReadWriteMutex());
+	}
 
+	flyingObject x("hello", 1.0, 0.0, 2.0);
+	flyingObject y("hello2", 1.0, 0.0, 2.0);
+
+	std::stringstream strm;
+	strm << x;
+	drawStream(strm, 0, 0, GLUT_BITMAP_HELVETICA_12, 12);
+	strm.str("");
+	strm.clear();
+	strm << y;
+	drawStream(strm, 80, 0, GLUT_BITMAP_HELVETICA_12, 12);
+	strm.str("");
+	strm.clear();
+	strm << y;
+	drawStream(strm, 80, -150, GLUT_BITMAP_HELVETICA_12, 12);
 	glFlush();
 	glutSwapBuffers();
 }
 
 void calculateScene(void) {
-	double maxX= (*field)->getMaxX();
+
+	double maxX = (*field)->getMaxX();
 	double maxY = (*field)->getMaxY();
 	double maxZ = (*field)->getMaxZ();
 	double minX = (*field)->getMinX();
 	double minY = (*field)->getMinY();
 	double minZ = (*field)->getMinZ();
 	double maxSize = abs(maxX);
+	double maxD = (*field)->getMaxD();
 	if (abs(maxY) > maxSize)
 		maxSize = abs(maxY);
 	if (abs(maxZ) > maxSize)
@@ -154,11 +182,11 @@ void calculateScene(void) {
 		maxSize = abs(minY);
 	if (abs(minZ) > maxSize)
 		maxSize = abs(minZ);
-	top = maxSize;
-	bottom = -maxSize;
-	right = maxSize;
-	left = -maxSize;
-	_far = 2 * maxSize + _near;
+	top = maxSize+maxD;
+	bottom = -maxSize-maxD;
+	right = maxSize+maxD;
+	left = -maxSize-maxD;
+	_far = 2 * (maxSize + maxD) + _near;
 }
 
 void reshape(int width, int height) {
@@ -281,7 +309,7 @@ void initFunc(void) {
 void initMenu(void) {
 	int menuAspect = glutCreateMenu(menu);
 	glutAddMenuEntry("kamera manualna", MANUAL_CAMERA);
-	glutAddMenuEntry("kamera automatyczna", AUTOMATIC_CAMERA);
+//	glutAddMenuEntry("kamera automatyczna", AUTOMATIC_CAMERA);
 
 	int menuObject = glutCreateMenu(menu);
 	// menu g³ówne
@@ -292,6 +320,15 @@ void initMenu(void) {
 	glutAddMenuEntry("Wyjscie", EXIT);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void setGravField(gravityField** gravField) {
+	if (gravField)
+		field = gravField;
+	else
+		throw threadExit("gravField = nullptr");
+	if (!*gravField)
+		throw threadExit("*gravField = nullptr");
 }
 
 void startRendering(gravityField** gravField) {
