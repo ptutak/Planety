@@ -6,7 +6,6 @@ int main(void)
 {
 //	init();
 	gravityField* tmp = new gravityField;
-		//=new gravityField;
 	try {
 		startRendering(&tmp);
 	}
@@ -21,6 +20,6 @@ int main(void)
 		system("pause");
 		return 0;
 	}
-	
+	std::cout << "jestem tu, po wyjsciu z loop" << std::endl;
 	system("pause");
 }

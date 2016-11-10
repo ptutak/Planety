@@ -6,16 +6,22 @@ CLASS FLYING OBJECT
 
 */
 std::mutex readWriteMutex;
+std::mutex multiplierMutex;
 
 std::mutex& getReadWriteMutex(void) {
 	return readWriteMutex;
 }
 
+std::mutex& getMultiplierMutex(void) {
+	return multiplierMutex;
+}
+
 int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
-	out << std::setprecision(3);
-	out << std::fixed;
+//	out << std::setprecision(3);
+//	out << std::fixed;
+	out << std::defaultfloat;
 	out << obj.getName() << std::endl;
 	out << "m:  " << obj.getMass() << std::endl;
 	out << "d:  " << obj.getDiameter() << std::endl;
@@ -28,7 +34,6 @@ std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
 	out << "ax: " << obj.getAx() << std::endl;
 	out << "ay: " << obj.getAy() << std::endl;
 	out << "az: " << obj.getAz() << std::endl;
-	out << std::defaultfloat;
 	return out;
 }
 
@@ -153,18 +158,25 @@ void gravityField::addObject(flyingObject* next) {
 			throw std::invalid_argument("Obiekt o nazwie " + next->getName() + " juz istnieje");
 	}
 	objects.push_back(next);
+	if (next->x > maxX)
+		maxX = next->x;
+	else if (next->x < minX)
+		minX = next->x;
+	if (next->y > maxY)
+		maxY = next->y;
+	else if (next->y < minY)
+		minY = next->y;
+	if (next->z > maxZ)
+		maxZ = next->z;
+	else if (next->z < minZ)
+		minZ = next->z;
+	if (next->d > maxD)
+		maxD = next->d;
 }
 
 void gravityField::computeGravity(double dt) {
 	std::lock_guard<std::mutex> lg(readWriteMutex);
 	if (!objects.empty()) {
-		maxX = objects.front()->x;
-		minX = objects.front()->x;
-		maxY = objects.front()->y;
-		minY = objects.front()->y;
-		maxZ = objects.front()->z;
-		minZ = objects.front()->z;
-		maxD = objects.front()->d;
 		for (auto i : objects) {
 			double Ex = 0.0;
 			double Ey = 0.0;
@@ -223,6 +235,29 @@ void gravityField::removeObject(const std::string name) {
 			delete tmp;
 			break;
 		}
+	}
+	maxX = .0;
+	maxY = .0;
+	maxZ = .0;
+	minX = .0;
+	minY = .0;
+	minZ = .0;
+	maxD = .0;
+	for (auto i : objects) {
+		if (i->x > maxX)
+			maxX = i->x;
+		else if (i->x < minX)
+			minX = i->x;
+		if (i->y > maxY)
+			maxY = i->y;
+		else if (i->y < minY)
+			minY = i->y;
+		if (i->z > maxZ)
+			maxZ = i->z;
+		else if (i->z < minZ)
+			minZ = i->z;
+		if (i->d > maxD)
+			maxD = i->d;
 	}
 }
 bool gravityField::searchObject(const std::string name) const {

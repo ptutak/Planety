@@ -205,7 +205,11 @@ void modifyObjectMenu(gravityField* gravField) {
 }
 
 void startSimulationMenu(gravityField* gravField) {
-
+	clock_t start_clock;
+	clock_t dif = FRAME_SIZE;
+	double multiplier;
+	int intmulti;
+	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
 	try {
 		std::thread renderingThread(startRendering, &gravField);
 		renderingThread.detach();
@@ -213,29 +217,33 @@ void startSimulationMenu(gravityField* gravField) {
 	catch (const threadExit& x) {
 		std::cerr << "Nastapil wyjatek:" << x.what() << std::endl;
 	}
-	clock_t start_clock;
-	clock_t dif = FRAME_SIZE;
-	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
-	int multiplier,initialMultiplier=1;
-	system("cls");
-	std::cout << "Podaj szybkosc symulacji w krotnosci czasu (np. 1,2,3...) lub nacisnij Enter (domyslnie 1)" << std::endl;
-	{
-		std::string tmp;
-		std::getline(std::cin, tmp);
-		std::istringstream tmpstr(tmp);
-		tmpstr >> initialMultiplier;
+	catch (const std::exception& x) {
+		std::cerr << x.what() << std::endl;
 	}
-	multiplier = initialMultiplier;
-	std::cout << "Mnoznik czasu:" << initialMultiplier << std::endl;
+	system("cls");
 	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	system("pause");
 	start_clock = clock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
+		{
+			std::lock_guard<std::mutex> lg(getMultiplierMutex());
+			multiplier= gravField->getMultiplier();
+		}
+		intmulti = static_cast<int>(multiplier);
+		multiplier -= static_cast<double>(intmulti);
 		do {
 			gravField->computeGravity(frSiz);
-			--multiplier;
-		} while (multiplier);
-		multiplier = initialMultiplier;
+			if (dif > FRAME_SIZE) {
+				gravField->computeGravity((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz);
+			}
+			--intmulti;
+		} while (intmulti);
+		if (multiplier) {
+			gravField->computeGravity(frSiz*multiplier);
+			if (dif > FRAME_SIZE) {
+				gravField->computeGravity(((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz)*multiplier);
+			}
+		}
 		do
 			dif = clock() - start_clock;
 		while (dif < FRAME_SIZE);

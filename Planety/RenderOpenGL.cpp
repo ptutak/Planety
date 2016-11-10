@@ -163,15 +163,24 @@ void display(void) {
 }
 
 void calculateScene(void) {
-
-	double maxX = (*field)->getMaxX();
-	double maxY = (*field)->getMaxY();
-	double maxZ = (*field)->getMaxZ();
-	double minX = (*field)->getMinX();
-	double minY = (*field)->getMinY();
-	double minZ = (*field)->getMinZ();
+	double maxX;
+	double maxY;
+	double maxZ;
+	double minX;
+	double minY;
+	double minZ;
+	double maxD;
+	{
+		std::lock_guard<std::mutex> lg(getReadWriteMutex());
+		maxX = (*field)->getMaxX();
+		maxY = (*field)->getMaxY();
+		maxZ = (*field)->getMaxZ();
+		minX = (*field)->getMinX();
+		minY = (*field)->getMinY();
+		minZ = (*field)->getMinZ();
+		maxD = (*field)->getMaxD();
+	}
 	double maxSize = abs(maxX);
-	double maxD = (*field)->getMaxD();
 	if (abs(maxY) > maxSize)
 		maxSize = abs(maxY);
 	if (abs(maxZ) > maxSize)
@@ -209,11 +218,17 @@ void reshape(int width, int height) {
 
 void keyboard(unsigned char key, int x, int y) {
 	if (key == '+')
-		rotatez +=1.5;
+	{
+		std::lock_guard<std::mutex> lg(getMultiplierMutex());
+		(*field)->addMultiplier(0.5);
+	}
 	if (key == '-')
-		rotatez -= 1.5;
+	{
+		std::lock_guard<std::mutex> lg(getMultiplierMutex());
+		(*field)->addMultiplier(-0.5);
+	}
 	if (key == 27)
-		exit(0);
+		glutLeaveMainLoop();
 	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
@@ -289,7 +304,7 @@ void menu(int value)
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 		break;
 	case EXIT:
-		exit(0);
+		glutLeaveMainLoop();
 	}
 }
 
@@ -304,6 +319,7 @@ void initFunc(void) {
 	glutSpecialFunc(specialKeys);
 	glutMouseFunc(mouseButton);
 	glutMotionFunc(mouseMotion);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 }
 
 void initMenu(void) {
@@ -326,9 +342,9 @@ void setGravField(gravityField** gravField) {
 	if (gravField)
 		field = gravField;
 	else
-		throw threadExit("gravField = nullptr");
+		throw threadExit("gravField = nullptr",-1);
 	if (!*gravField)
-		throw threadExit("*gravField = nullptr");
+		throw threadExit("*gravField = nullptr",-1);
 }
 
 void startRendering(gravityField** gravField) {

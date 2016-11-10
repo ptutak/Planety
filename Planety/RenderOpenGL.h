@@ -7,8 +7,13 @@
 #include <string>
 
 class threadExit : public std::exception {
+private:
+	int status;
 public:
-	threadExit(const char* msg) :exception{ msg } {	}
+	int getStatus(void) const { return status; }
+	threadExit() :exception{ "exit" }, status{ 0 } {}
+	threadExit(const char* msg) :exception{ msg }, status{ 0 } {}
+	threadExit(const char* msg, int st) :exception{ msg }, status{ st } {}
 };
 
 void startRendering(gravityField** gravField);

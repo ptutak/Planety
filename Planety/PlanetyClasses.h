@@ -8,7 +8,11 @@
 #include <iomanip>
 #include <sstream>
 
+
+//MUTEX LOCKS
+
 std::mutex& getReadWriteMutex(void);
+std::mutex& getMultiplierMutex(void);
 
 // CONSTANTS
 constexpr double G = 6.6740831e-11;
@@ -130,6 +134,9 @@ class gravityField
 	double maxZ;
 	double minZ;
 	double maxD;
+
+	double multiplier;
+
 	std::list<flyingObject*> objects;
 
 public:
@@ -147,8 +154,11 @@ public:
 	double getMaxZ(void) const { return maxZ; }
 	double getMinZ(void) const { return minZ; }
 	double getMaxD(void) const { return maxD; }
+	double getMultiplier(void) const { return multiplier; }
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
 	
-	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 } {};
+	void addMultiplier(double add) { multiplier += add; }
+
+	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, multiplier{ 1.0 } {};
 	~gravityField(void);
 };
