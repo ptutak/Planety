@@ -175,7 +175,7 @@ void gravityField::addObject(flyingObject* next) {
 }
 
 void gravityField::computeGravity(double dt) {
-	std::lock_guard<std::mutex> lg(readWriteMutex);
+
 	if (!objects.empty()) {
 		for (auto i : objects) {
 			double Ex = 0.0;
@@ -194,23 +194,26 @@ void gravityField::computeGravity(double dt) {
 					}
 				}
 			}
-			i->updateAcceleration(Ex, Ey, Ez);
-			i->updatePosition(dt);
-			i->updateVelocity(dt);
-			if (i->x > maxX)
-				maxX = i->x;
-			else if (i->x < minX)
-				minX = i->x;
-			if (i->y > maxY)
-				maxY = i->y;
-			else if (i->y < minY)
-				minY = i->y;
-			if (i->z > maxZ)
-				maxZ = i->z;
-			else if (i->z < minZ)
-				minZ = i->z;
-			if (i->d > maxD)
-				maxD = i->d;
+			{
+				std::lock_guard<std::mutex> lg(readWriteMutex);
+				i->updateAcceleration(Ex, Ey, Ez);
+				i->updatePosition(dt);
+				i->updateVelocity(dt);
+				if (i->x > maxX)
+					maxX = i->x;
+				else if (i->x < minX)
+					minX = i->x;
+				if (i->y > maxY)
+					maxY = i->y;
+				else if (i->y < minY)
+					minY = i->y;
+				if (i->z > maxZ)
+					maxZ = i->z;
+				else if (i->z < minZ)
+					minZ = i->z;
+				if (i->d > maxD)
+					maxD = i->d;
+			}
 		}
 	}
 }

@@ -4,8 +4,8 @@
 #include <thread>
 enum
 {
-	AUTOMATIC_CAMERA, // aspekt obrazu - ca³e okno
-	MANUAL_CAMERA, // aspekt obrazu 1:1
+	AUTOMATIC_CAMERA, //nie zaimplementowano
+	MANUAL_CAMERA, 
 	EXIT // wyjœcie
 };
 
@@ -15,13 +15,12 @@ char* argv = nullptr;
 
 gravityField** field = nullptr;
 
-GLdouble left = -10.0;
-GLdouble right = 10.0;
-GLdouble bottom = -10.0;
-
-GLdouble top = 10.0;
-GLdouble _near = 10.0;
-GLdouble _far = 13000.0;
+GLdouble left = -1.0;
+GLdouble right = 1.0;
+GLdouble bottom = -1.0;
+GLdouble top = 1.0;
+GLdouble _near = 1.0;
+GLdouble _far = 5.0;
 
 GLdouble scale = 1.0;
 
@@ -44,28 +43,29 @@ void drawCircle(double radius)
 	glBegin(GL_LINE_LOOP);
 	for (int i = 0; i < 360; i++) {
 		double degInRad = i*DEG2RAD;
-		glVertex3d(cos(degInRad)*radius, sin(degInRad)*radius,0.0);
+		glVertex3d(cos(degInRad)*radius, sin(degInRad)*radius, 0.0);
 	}
 	glEnd();
 }
-void origin(void) {
+
+void drawOrigin(void) {
 	glLineWidth(3.0);
 	glBegin(GL_LINES);
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3d(1.0, 0.0, 0.0);
 
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(1.0, 0.0, 0.0);
 	glVertex3d(1.0, 0.0, 0.0);
 	glVertex3d(0.7, 0.15, 0.0);
-	
-	glColor3f(0.0, 0.0, 1.0);
+
+	glColor3d(0.0, 0.0, 1.0);
 
 	glVertex3d(0.0, 0.0, 0.0);
 	glVertex3d(0.0, 1.0, 0.0);
 	glVertex3d(0.0, 1.0, 0.0);
 	glVertex3d(0.0, 0.7, 0.15);
 
-	glColor3f(0.0, 1.0, 0.0);
+	glColor3d(0.0, 1.0, 0.0);
 
 	glVertex3d(0.0, 0.0, 1.0);
 	glVertex3d(0.0, 0.0, 0.0);
@@ -73,17 +73,19 @@ void origin(void) {
 	glVertex3d(0.15, 0.0, 0.7);
 
 	glEnd();
-	glLineWidth(1.0);
 
 	glColor3d(1.0, 0.0, 0.0);
 	glRasterPos3d(1.0, -0.25, -0.25);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('x'));
+
 	glColor3d(0.0, 0.0, 1.0);
 	glRasterPos3d(-0.25, 1.0, -0.25);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('y'));
+
 	glColor3d(0.0, 1.0, 0.0);
 	glRasterPos3d(-0.25, -0.25, 1.0);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('z'));
+	glLineWidth(1.0);
 }
 
 void drawString(std::string s, int x, int y, void * font) {
@@ -99,27 +101,48 @@ void drawString(std::string s, int x, int y, void * font) {
 	}
 	glPushMatrix();
 	glLoadIdentity();
-	glRasterPos3d(xx, yy, -_near-0.05);
+	glRasterPos3d(xx, yy, -_near - 0.05);
 	for (unsigned int i = 0; i < s.length(); i++)
 		glutBitmapCharacter(font, s[i]);
 	glPopMatrix();
 }
-void drawStream(std::istream& str,int x,int y, void* font, int fontSize) {
+void drawStream(std::istream& str, int x, int y, void* font, int fontSize) {
 	int line = 0;
 	while (!str.eof()) {
 		std::string tmp;
 		std::getline(str, tmp);
-		drawString(tmp, 5 + x,-8 + y-fontSize*line, font);
+		drawString(tmp, 5 + x, -11 + y - fontSize*line, font);
 		line++;
 	}
 }
-void initDisplayMatrixModeOriginBackground(void) {
+
+void drawAxis(void) {
+	glPushMatrix();
+	glScaled((_far - _near)*1.3, (_far - _near)*1.3,( _far - _near)*1.3);
+	
+	glBegin(GL_LINES);
+	glColor3d(1, 0, 0);
+	glVertex3d(-1, 0, 0);
+	glVertex3d(1, 0, 0);
+	glColor3d(0, 0, 1);
+	glVertex3d(0, -1, 0);
+	glVertex3d(0, 1, 0);
+	glColor3d(0, 1, 0);
+	glVertex3d(0, 0, -1);
+	glVertex3d(0, 0, 1);
+	glEnd();
+	
+	glPopMatrix();
+}
+void initDisplayMatrixModeBackground(void) {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glTranslated(0, 0, -(_near + _far) / 2);
+
+
+	glTranslated(0, 0, -_near*3);
 
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
@@ -127,37 +150,55 @@ void initDisplayMatrixModeOriginBackground(void) {
 
 	glTranslated(translatex, translatey, translatez);
 
+	drawAxis();
+
 	glPushMatrix();
-	glScaled((_near + _far) / (2 * _near), (_near + _far) / (2 * _near), (_near + _far) / (2 * _near));
-	origin();
+	glScaled(3*_near/10, 3*_near / 10, 3*_near / 10);
+	drawOrigin();
 	glPopMatrix();
 
 	glScaled(scale, scale, scale);
 }
 
-void display(void) {
-	initDisplayMatrixModeOriginBackground();
-
-	glColor3d(0.0, 0.0, 0.0);
-
-	for (auto i : (*field)->getObjects()) {
+void drawObjectsList(void) {
+	int leftPosition = 0;
+	int topPosition = 0;
+	for (const auto i : (*field)->getObjects()) {
 		std::lock_guard<std::mutex> lg(getReadWriteMutex());
+		std::stringstream strm;
+		strm << *i;
+		drawStream(strm, leftPosition * 80, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
+		++leftPosition;
+		if (((leftPosition + 1) * 80) > glutGet(GLUT_WINDOW_WIDTH)){
+			leftPosition = 0;
+			topPosition++;
+		}
 	}
+}
 
-	flyingObject x("hello", 1.0, 0.0, 2.0);
-	flyingObject y("hello2", 1.0, 0.0, 2.0);
+void drawObjects(void) {
+	glColor3d(0, 0, 0);
+	for (const auto i : (*field)->getObjects()) {
+		glPushMatrix();
+		{
+			std::lock_guard<std::mutex> lg(getReadWriteMutex());
+			glTranslated(i->getX(), i->getY(), i->getZ());
+			glRotated(90, 1, 0, 0);
+			glutWireSphere(i->getDiameter() / 2, 40, 20);
+		}
+		glPopMatrix();
+	}
+}
 
-	std::stringstream strm;
-	strm << x;
-	drawStream(strm, 0, 0, GLUT_BITMAP_HELVETICA_12, 12);
-	strm.str("");
-	strm.clear();
-	strm << y;
-	drawStream(strm, 80, 0, GLUT_BITMAP_HELVETICA_12, 12);
-	strm.str("");
-	strm.clear();
-	strm << y;
-	drawStream(strm, 80, -150, GLUT_BITMAP_HELVETICA_12, 12);
+void display(void) {
+	if (GetAsyncKeyState(VK_ESCAPE))
+		glutLeaveMainLoop();
+
+	initDisplayMatrixModeBackground();
+	glColor3d(0.0, 0.0, 0.0);
+	drawObjectsList();
+	drawObjects();
+	
 	glFlush();
 	glutSwapBuffers();
 }
@@ -195,16 +236,15 @@ void calculateScene(void) {
 	bottom = -maxSize-maxD;
 	right = maxSize+maxD;
 	left = -maxSize-maxD;
-	_far = 2 * (maxSize + maxD) + _near;
+	_near = (maxSize+maxD)*2;
+	_far = 1000 * (maxSize + maxD) + _near;
 }
 
 void reshape(int width, int height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-
-//	calculateScene();
-
+	calculateScene();
 	if (aspect == MANUAL_CAMERA) {
 		if (width < height && width > 0)
 			glFrustum(left, right, bottom * height / width,top * height / width, _near, _far);
@@ -227,31 +267,31 @@ void keyboard(unsigned char key, int x, int y) {
 		std::lock_guard<std::mutex> lg(getMultiplierMutex());
 		(*field)->addMultiplier(-0.5);
 	}
-	if (key == 27)
-		glutLeaveMainLoop();
+
 	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 void specialKeys(int key, int x, int y)
 {
+	double scaleTr = (right - left)*0.05;
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		translatex -= 0.7;
+		translatex -= scaleTr;
 		break;
 	case GLUT_KEY_RIGHT:
-		translatex += 0.7;
+		translatex += scaleTr;
 		break;
 	case GLUT_KEY_UP:
-		translatey += 0.7;
+		translatey += scaleTr;
 		break;
 	case GLUT_KEY_DOWN:
-		translatey -= 0.7;
+		translatey -= scaleTr;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		translatez += 0.7;
+		translatez += scaleTr;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		translatez -= 0.7;
+		translatez -= scaleTr;
 		break;
 	}
 	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
@@ -271,11 +311,9 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) 
 			return;
 		if (button == 3)
-			scale += 0.05;
+			scale *= 1.05;
 		if (button == 4)
-			scale -= 0.05;
-		if (scale < 0)
-			scale = 0.0;
+			scale *= 0.95;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
@@ -283,10 +321,10 @@ void mouseButton(int button, int state, int x, int y) {
 void mouseMotion(int x, int y) {
 	if (buttonState == GLUT_DOWN)
 	{
-		rotatex += 5.0 * (top- bottom) / glutGet(GLUT_WINDOW_HEIGHT) *(y - mouseButtonY);
+		rotatex += .1 * (y - mouseButtonY);
 		mouseButtonY = y;
 
-		rotatey += 5.0 * (right - left) / glutGet(GLUT_WINDOW_WIDTH) *(x - mouseButtonX);
+		rotatey += .1 * (x - mouseButtonX);
 		mouseButtonX = x;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
