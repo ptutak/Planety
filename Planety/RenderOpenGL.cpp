@@ -135,12 +135,10 @@ void drawAxis(void) {
 	glPopMatrix();
 }
 void initDisplayMatrixModeBackground(void) {
-	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glClearColor(1., 1., .94, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-
 
 	glTranslated(0, 0, -_near*3);
 
