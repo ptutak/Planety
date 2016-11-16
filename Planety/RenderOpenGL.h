@@ -5,6 +5,9 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <cstdio>
+#include <string>
+#include <thread>
 
 class threadExit : public std::exception {
 private:
@@ -13,7 +16,7 @@ public:
 	int getStatus(void) const { return status; }
 	threadExit() :exception{ "exit" }, status{ 0 } {}
 	threadExit(const char* msg) :exception{ msg }, status{ 0 } {}
-	threadExit(const char* msg, int st) :exception{ msg }, status{ st } {}
+	threadExit(const char* msg, int stat) :exception{ msg }, status{ stat } {}
 };
 
-void startRendering(gravityField** gravField);
+void startRendering(gravityField** gravField,std::mutex* gravMutex);

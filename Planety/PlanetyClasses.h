@@ -8,12 +8,6 @@
 #include <iomanip>
 #include <sstream>
 
-
-//MUTEX LOCKS
-
-std::mutex& getReadWriteMutex(void);
-std::mutex& getMultiplierMutex(void);
-
 // CONSTANTS
 constexpr double G = 6.6740831e-11;
 
@@ -51,7 +45,7 @@ public:
 	virtual void updateAcceleration(double Ex, double Ey, double Ez);
 	virtual void updatePosition(double dt);
 	virtual void updateVelocity(double dt);
-	virtual std::string shortDescription(int precision = -1);
+	virtual std::string shortDescription(int precision = -1) const;
 
 	std::string getName(void) const { return name; }
 	double getMass(void) const { return m; }
@@ -101,7 +95,7 @@ private:
 	double aze;
 public:
 	void recalculateEngineAcceleration(void);
-	std::string shortDescription(int precision = -1);
+	std::string shortDescription(int precision = -1) const;
 	void updateAcceleration(double Ex, double Ey, double Ez);
 
 	double getForceX(void) const { return Fxe; }
@@ -134,31 +128,32 @@ class gravityField
 	double maxZ;
 	double minZ;
 	double maxD;
-
-	double multiplier;
-
+	double timeMultiplier;
 	std::list<flyingObject*> objects;
-
+	mutable std::mutex multiplierMutex;
+	mutable std::mutex maxMutex;
 public:
+	mutable std::mutex objectsMutex;
+	
 	void addObject(flyingObject* next);
 	void computeGravity(double dt);
 	void printObjects(void) const;
 	void printObjectsList(std::ostream& out, int precision = -1) const;
 	void removeObject(const std::string name);
 	bool searchObject(const std::string name) const;
-
-	double getMaxX(void) const { return maxX; }
-	double getMinX(void) const { return minX; }
-	double getMaxY(void) const { return maxY; }
-	double getMinY(void) const { return minY; }
-	double getMaxZ(void) const { return maxZ; }
-	double getMinZ(void) const { return minZ; }
-	double getMaxD(void) const { return maxD; }
-	double getMultiplier(void) const { return multiplier; }
-	const std::list<flyingObject*>& getObjects(void) const { return objects; }
 	
-	void addMultiplier(double add) { multiplier += add; }
+	double getMaxX(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxX; }
+	double getMinX(void) const { std::lock_guard<std::mutex> lg(maxMutex); return minX; }
+	double getMaxY(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxY; }
+	double getMinY(void) const { std::lock_guard<std::mutex> lg(maxMutex); return minY; }
+	double getMaxZ(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxZ; }
+	double getMinZ(void) const { std::lock_guard<std::mutex> lg(maxMutex); return minZ; }
+	double getMaxD(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxD; }
+	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return timeMultiplier; }
+	const std::list<flyingObject*>& getObjects(void) const { return objects; }
 
-	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, multiplier{ 1.0 } {};
+	void addMultiplier(double add);
+
+	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, timeMultiplier{ 1.0 } {};
 	~gravityField(void);
 };

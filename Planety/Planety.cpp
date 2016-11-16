@@ -1,5 +1,8 @@
 #include "Planety.h"
 
+//MUTEX
+std::mutex fieldMutex;
+
 //CONSTANTS
 const int FRAME_SIZE = 10;
 
@@ -207,48 +210,33 @@ void modifyObjectMenu(gravityField* gravField) {
 void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = FRAME_SIZE;
-	double multiplier;
-	int intmulti;
 	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
+	std::thread renderingThread;
+	system("cls");
+	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
+	system("pause");
 	try {
-		std::thread renderingThread(startRendering, &gravField);
-		renderingThread.detach();
+		renderingThread = std::thread(startRendering, &gravField, &fieldMutex);
 	}
 	catch (const threadExit& x) {
 		std::cerr << "Nastapil wyjatek:" << x.what() << std::endl;
+		throw;
 	}
 	catch (const std::exception& x) {
 		std::cerr << x.what() << std::endl;
 	}
-	system("cls");
-	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
-	system("pause");
 	start_clock = clock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
-		{
-			std::lock_guard<std::mutex> lg(getMultiplierMutex());
-			multiplier= gravField->getMultiplier();
-		}
-		intmulti = static_cast<int>(multiplier);
-		multiplier -= static_cast<double>(intmulti);
-		do {
-			gravField->computeGravity(frSiz);
-			if (dif > FRAME_SIZE) {
-				gravField->computeGravity((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz);
-			}
-			--intmulti;
-		} while (intmulti);
-		if (multiplier) {
-			gravField->computeGravity(frSiz*multiplier);
-			if (dif > FRAME_SIZE) {
-				gravField->computeGravity(((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz)*multiplier);
-			}
+		gravField->computeGravity(frSiz);
+		if (dif > FRAME_SIZE) {
+			gravField->computeGravity((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz);
 		}
 		do
 			dif = clock() - start_clock;
 		while (dif < FRAME_SIZE);
 		start_clock = clock();					//pocz¹tek liczenia czasu kolejnej iteracji
 	}
+	renderingThread.join();
 }
 
 void saveToFileMenu(const gravityField* gravField) {
@@ -308,7 +296,7 @@ void deleteAllObjectsMenu(gravityField*& gravField) {
 	std::cin >> c;
 	std::getline(std::cin, tmp);
 	if (c == 'T' || c=='t') {
-			std::lock_guard<std::mutex> lg(getReadWriteMutex());
+			std::lock_guard<std::mutex> lg(fieldMutex);
 			delete gravField;
 			gravField = new gravityField;
 			std::cout << "OK - usunieto" << std::endl;

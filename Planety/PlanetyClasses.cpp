@@ -5,23 +5,10 @@
 CLASS FLYING OBJECT
 
 */
-std::mutex readWriteMutex;
-std::mutex multiplierMutex;
-
-std::mutex& getReadWriteMutex(void) {
-	return readWriteMutex;
-}
-
-std::mutex& getMultiplierMutex(void) {
-	return multiplierMutex;
-}
 
 int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
-//	out << std::setprecision(3);
-//	out << std::fixed;
-	out << std::defaultfloat;
 	out << obj.getName() << std::endl;
 	out << "m:  " << obj.getMass() << std::endl;
 	out << "d:  " << obj.getDiameter() << std::endl;
@@ -37,7 +24,7 @@ std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
 	return out;
 }
 
-std::string flyingObject::shortDescription(int prec) {
+std::string flyingObject::shortDescription(int prec) const {
 	std::string retString, tempString;
 	std::stringstream strm;
 	retString = name;
@@ -103,7 +90,7 @@ void rocket::recalculateEngineAcceleration(void) {
 	}
 }
 
-std::string rocket::shortDescription(int prec) {
+std::string rocket::shortDescription(int prec) const {
 	std::string retString, tempString;
 	std::stringstream strm;
 	retString = name;
@@ -151,8 +138,16 @@ rocket::rocket(double mass, double diameter, double xX, double yY, double zZ, do
 CLASS GRAVITY FIELD
 
 */
+void gravityField::addMultiplier(double add) { 
+	std::lock_guard<std::mutex> lg(multiplierMutex);
+	timeMultiplier += add;
+	if (timeMultiplier < 0.0)
+		timeMultiplier = 0.0;
+}
+
 
 void gravityField::addObject(flyingObject* next) {
+	std::lock_guard<std::mutex> lg(objectsMutex);
 	for (auto x : objects) {
 		if (x->name == next->name)
 			throw std::invalid_argument("Obiekt o nazwie " + next->getName() + " juz istnieje");
@@ -175,8 +170,14 @@ void gravityField::addObject(flyingObject* next) {
 }
 
 void gravityField::computeGravity(double dt) {
-
-	if (!objects.empty()) {
+	int multi;
+	double rest;
+	{
+		std::lock_guard<std::mutex> lg(multiplierMutex);
+		multi = static_cast<int>(timeMultiplier);
+		rest = timeMultiplier - static_cast<double>(multi);
+	}
+	for (;multi>0;--multi)
 		for (auto i : objects) {
 			double Ex = 0.0;
 			double Ey = 0.0;
@@ -195,10 +196,13 @@ void gravityField::computeGravity(double dt) {
 				}
 			}
 			{
-				std::lock_guard<std::mutex> lg(readWriteMutex);
+				std::lock_guard<std::mutex> lg(objectsMutex);
 				i->updateAcceleration(Ex, Ey, Ez);
 				i->updatePosition(dt);
 				i->updateVelocity(dt);
+			}
+			{
+				std::lock_guard<std::mutex> lg(maxMutex);
 				if (i->x > maxX)
 					maxX = i->x;
 				else if (i->x < minX)
@@ -215,21 +219,65 @@ void gravityField::computeGravity(double dt) {
 					maxD = i->d;
 			}
 		}
-	}
+	if (rest)
+		for (auto i : objects) {
+			double Ex = 0.0;
+			double Ey = 0.0;
+			double Ez = 0.0;
+			for (auto j : objects) {
+				if (i == j)
+					continue;
+				else {
+					double iDisjSq = i->distanceSquared(*j);
+					if (iDisjSq) {
+						double MGRRR = G*j->m / (iDisjSq * sqrt(iDisjSq));
+						Ex += (j->x - i->x) * MGRRR;
+						Ey += (j->y - i->y) * MGRRR;
+						Ez += (j->z - i->z) * MGRRR;
+					}
+				}
+			}
+			{
+				std::lock_guard<std::mutex> lg(objectsMutex);
+				i->updateAcceleration(Ex, Ey, Ez);
+				i->updatePosition(dt*rest);
+				i->updateVelocity(dt*rest);
+			}
+			{
+				std::lock_guard<std::mutex> lg(maxMutex);
+				if (i->x > maxX)
+					maxX = i->x;
+				else if (i->x < minX)
+					minX = i->x;
+				if (i->y > maxY)
+					maxY = i->y;
+				else if (i->y < minY)
+					minY = i->y;
+				if (i->z > maxZ)
+					maxZ = i->z;
+				else if (i->z < minZ)
+					minZ = i->z;
+				if (i->d > maxD)
+					maxD = i->d;
+			}
+		}
 }
 
 void gravityField::printObjects(void) const {
-	for (auto x : objects) {
+	std::lock_guard<std::mutex> lg(objectsMutex);
+	for (const auto x : objects) {
 		std::cout << *x;
 	}
 }
 void gravityField::printObjectsList(std::ostream& out, int prec) const {
-	for (auto x : objects) {
+	std::lock_guard<std::mutex> lg(objectsMutex);
+	for (const auto x : objects) {
 		out << x->shortDescription(prec);
 		out << std::endl;
 	}
 }
 void gravityField::removeObject(const std::string name) {
+	std::lock_guard<std::mutex> lg(objectsMutex);
 	std::list<flyingObject*>::const_iterator pos;
 	for (pos = objects.cbegin(); pos != objects.cend(); pos++) {
 		if ((*pos)->name == name) {
@@ -264,6 +312,7 @@ void gravityField::removeObject(const std::string name) {
 	}
 }
 bool gravityField::searchObject(const std::string name) const {
+	std::lock_guard<std::mutex> lg(objectsMutex);
 	for (auto x : objects) {
 		if (x->getName() == name)
 			return true;
@@ -272,6 +321,7 @@ bool gravityField::searchObject(const std::string name) const {
 }
 
 gravityField::~gravityField(void) {
+	std::lock_guard<std::mutex> lg(objectsMutex);
 	while (!objects.empty()) {
 		delete objects.front();
 		objects.pop_front();

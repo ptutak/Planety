@@ -1,12 +1,10 @@
 #include "RenderOpenGL.h"
-#include <cstdio>
-#include <string>
-#include <thread>
+
 enum
 {
 	AUTOMATIC_CAMERA, //nie zaimplementowano
 	MANUAL_CAMERA, 
-	EXIT // wyjœcie
+	EXIT
 };
 
 int aspect = MANUAL_CAMERA;
@@ -14,6 +12,7 @@ int argcp = 0;
 char* argv = nullptr;
 
 gravityField** field = nullptr;
+std::mutex* fieldMutex = nullptr;
 
 GLdouble left = -1.0;
 GLdouble right = 1.0;
@@ -135,7 +134,7 @@ void drawAxis(void) {
 	glPopMatrix();
 }
 void initDisplayMatrixModeBackground(void) {
-	glClearColor(1., 1., .94, 1.0);
+	glClearColor(1.0, 1.0, 0.94, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -161,10 +160,13 @@ void initDisplayMatrixModeBackground(void) {
 void drawObjectsList(void) {
 	int leftPosition = 0;
 	int topPosition = 0;
+	std::lock_guard<std::mutex> lg(*fieldMutex);
 	for (const auto i : (*field)->getObjects()) {
-		std::lock_guard<std::mutex> lg(getReadWriteMutex());
 		std::stringstream strm;
-		strm << *i;
+		{
+			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
+			strm << *i;
+		}
 		drawStream(strm, leftPosition * 80, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
 		++leftPosition;
 		if (((leftPosition + 1) * 80) > glutGet(GLUT_WINDOW_WIDTH)){
@@ -176,27 +178,29 @@ void drawObjectsList(void) {
 
 void drawObjects(void) {
 	glColor3d(0, 0, 0);
+	std::lock_guard<std::mutex> lg(*fieldMutex);
 	for (const auto i : (*field)->getObjects()) {
-		glPushMatrix();
+		double x, y, z, d;
 		{
-			std::lock_guard<std::mutex> lg(getReadWriteMutex());
-			glTranslated(i->getX(), i->getY(), i->getZ());
-			glRotated(90, 1, 0, 0);
-			glutWireSphere(i->getDiameter() / 2, 40, 20);
+			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
+			x = i->getX();
+			y = i->getY();
+			z = i->getZ();
+			d = i->getDiameter();
 		}
+		glPushMatrix();
+		glTranslated(x,y,z);
+		glRotated(90, 1, 0, 0);
+		glutWireSphere(d / 2, 40, 20);
 		glPopMatrix();
 	}
 }
 
 void display(void) {
-	if (GetAsyncKeyState(VK_ESCAPE))
-		glutLeaveMainLoop();
-
 	initDisplayMatrixModeBackground();
 	glColor3d(0.0, 0.0, 0.0);
 	drawObjectsList();
 	drawObjects();
-	
 	glFlush();
 	glutSwapBuffers();
 }
@@ -210,7 +214,7 @@ void calculateScene(void) {
 	double minZ;
 	double maxD;
 	{
-		std::lock_guard<std::mutex> lg(getReadWriteMutex());
+		std::lock_guard<std::mutex> lg(*fieldMutex);
 		maxX = (*field)->getMaxX();
 		maxY = (*field)->getMaxY();
 		maxZ = (*field)->getMaxZ();
@@ -257,15 +261,16 @@ void reshape(int width, int height) {
 void keyboard(unsigned char key, int x, int y) {
 	if (key == '+')
 	{
-		std::lock_guard<std::mutex> lg(getMultiplierMutex());
+		std::lock_guard<std::mutex> lg(*fieldMutex);
 		(*field)->addMultiplier(0.5);
 	}
 	if (key == '-')
 	{
-		std::lock_guard<std::mutex> lg(getMultiplierMutex());
+		std::lock_guard<std::mutex> lg(*fieldMutex);
 		(*field)->addMultiplier(-0.5);
 	}
-
+	if (key == 27)
+		glutLeaveMainLoop();
 	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
@@ -309,7 +314,7 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) 
 			return;
 		if (button == 3)
-			scale *= 1.05;
+			scale /= .95;
 		if (button == 4)
 			scale *= 0.95;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
@@ -319,10 +324,10 @@ void mouseButton(int button, int state, int x, int y) {
 void mouseMotion(int x, int y) {
 	if (buttonState == GLUT_DOWN)
 	{
-		rotatex += .1 * (y - mouseButtonY);
+		rotatex += 0.1 * (y - mouseButtonY);
 		mouseButtonY = y;
 
-		rotatey += .1 * (x - mouseButtonX);
+		rotatey += 0.1 * (x - mouseButtonX);
 		mouseButtonX = x;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
@@ -374,17 +379,21 @@ void initMenu(void) {
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
-void setGravField(gravityField** gravField) {
+void setGravFieldMutex(gravityField** gravField,std::mutex* gravMutex) {
 	if (gravField)
 		field = gravField;
 	else
 		throw threadExit("gravField = nullptr",-1);
 	if (!*gravField)
 		throw threadExit("*gravField = nullptr",-1);
+	if (gravMutex)
+		fieldMutex = gravMutex;
+	else
+		throw threadExit("gravMutex = nullptr", -1);
 }
 
-void startRendering(gravityField** gravField) {
-	setGravField(gravField);
+void startRendering(gravityField** gravField, std::mutex* gravMutex) {
+	setGravFieldMutex(gravField,gravMutex);
 	initFunc();
 	initMenu();
 	glutMainLoop();
