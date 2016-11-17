@@ -87,34 +87,6 @@ void drawOrigin(void) {
 	glLineWidth(1.0);
 }
 
-void drawString(std::string s, int x, int y, void * font) {
-	GLdouble xx;
-	GLdouble yy;
-	if (aspect == MANUAL_CAMERA) {
-		xx = (right - left) / glutGet(GLUT_WINDOW_WIDTH)*static_cast<GLdouble>(x) + left;
-		yy = (top - bottom) / glutGet(GLUT_WINDOW_HEIGHT)*static_cast<GLdouble>(y) + top;
-		if ((glutGet(GLUT_WINDOW_WIDTH) < glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_WIDTH) > 0)
-			yy = yy*glutGet(GLUT_WINDOW_HEIGHT) / glutGet(GLUT_WINDOW_WIDTH);
-		else if ((glutGet(GLUT_WINDOW_WIDTH) >= glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_HEIGHT) > 0)
-			xx = xx*glutGet(GLUT_WINDOW_WIDTH) / glutGet(GLUT_WINDOW_HEIGHT);
-	}
-	glPushMatrix();
-	glLoadIdentity();
-	glRasterPos3d(xx, yy, -_near - 0.05);
-	for (unsigned int i = 0; i < s.length(); i++)
-		glutBitmapCharacter(font, s[i]);
-	glPopMatrix();
-}
-void drawStream(std::istream& str, int x, int y, void* font, int fontSize) {
-	int line = 0;
-	while (!str.eof()) {
-		std::string tmp;
-		std::getline(str, tmp);
-		drawString(tmp, 5 + x, -11 + y - fontSize*line, font);
-		line++;
-	}
-}
-
 void drawAxis(void) {
 	glPushMatrix();
 	glScaled((_far - _near)*1.3, (_far - _near)*1.3,( _far - _near)*1.3);
@@ -133,52 +105,10 @@ void drawAxis(void) {
 	
 	glPopMatrix();
 }
-void initDisplayMatrixModeBackground(void) {
-	glClearColor(1.0, 1.0, 0.94, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glTranslated(0, 0, -_near*3);
-
-	glRotated(rotatex, 1.0, 0.0, 0.0);
-	glRotated(rotatey, 0.0, 1.0, 0.0);
-	glRotated(rotatez, 0.0, 0.0, 1.0);
-
-	glTranslated(translatex, translatey, translatez);
-
-	drawAxis();
-
-	glPushMatrix();
-	glScaled(3*_near/10, 3*_near / 10, 3*_near / 10);
-	drawOrigin();
-	glPopMatrix();
-
-	glScaled(scale, scale, scale);
-}
-
-void drawObjectsList(void) {
-	int leftPosition = 0;
-	int topPosition = 0;
-	std::lock_guard<std::mutex> lg(*fieldMutex);
-	for (const auto i : (*field)->getObjects()) {
-		std::stringstream strm;
-		{
-			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
-			strm << *i;
-		}
-		drawStream(strm, leftPosition * 80, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
-		++leftPosition;
-		if (((leftPosition + 1) * 80) > glutGet(GLUT_WINDOW_WIDTH)){
-			leftPosition = 0;
-			topPosition++;
-		}
-	}
-}
 
 void drawObjects(void) {
-	glColor3d(0, 0, 0);
 	std::lock_guard<std::mutex> lg(*fieldMutex);
+	glColor3d(0, 0, 0);
 	for (const auto i : (*field)->getObjects()) {
 		double x, y, z, d;
 		{
@@ -189,20 +119,107 @@ void drawObjects(void) {
 			d = i->getDiameter();
 		}
 		glPushMatrix();
-		glTranslated(x,y,z);
+		glTranslated(x, y, z);
 		glRotated(90, 1, 0, 0);
 		glutWireSphere(d / 2, 40, 20);
 		glPopMatrix();
 	}
 }
 
+void drawString(std::string s, int x, int y, void * font) {
+	GLdouble xx;
+	GLdouble yy;
+	if (aspect == MANUAL_CAMERA) {
+		xx = (right - left) / glutGet(GLUT_WINDOW_WIDTH)*static_cast<GLdouble>(x) + left;
+		yy = (top - bottom) / glutGet(GLUT_WINDOW_HEIGHT)*static_cast<GLdouble>(y) + top;
+		if ((glutGet(GLUT_WINDOW_WIDTH) < glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_WIDTH) > 0)
+			yy = yy*glutGet(GLUT_WINDOW_HEIGHT) / glutGet(GLUT_WINDOW_WIDTH);
+		else if ((glutGet(GLUT_WINDOW_WIDTH) >= glutGet(GLUT_WINDOW_HEIGHT)) && glutGet(GLUT_WINDOW_HEIGHT) > 0)
+			xx = xx*glutGet(GLUT_WINDOW_WIDTH) / glutGet(GLUT_WINDOW_HEIGHT);
+	}
+	glPushMatrix();
+	glLoadIdentity();
+	glRasterPos3d(xx, yy, -_near - 0.0001*_near);
+	for (unsigned int i = 0; i < s.length(); i++)
+		glutBitmapCharacter(font, s[i]);
+	glPopMatrix();
+}
+void drawStream(std::istream& str, int x, int y, void* font, int fontSize) {
+	int line = 0;
+	while (!str.eof()) {
+		std::string tmp;
+		std::getline(str, tmp);
+		drawString(tmp, 5 + x, -11 + y - fontSize*line, font);
+		line++;
+	}
+}
+void drawObjectsList(void) {
+	int leftPosition = 0;
+	int topPosition = 0;
+	std::lock_guard<std::mutex> lg(*fieldMutex);
+	for (const auto i : (*field)->getObjects()) {
+		std::stringstream strm;
+		{
+			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
+			strm << *i;
+		}
+		drawStream(strm, leftPosition * 100, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
+		++leftPosition;
+		if (((leftPosition + 1) * 100) > glutGet(GLUT_WINDOW_WIDTH)){
+			leftPosition = 0;
+			topPosition++;
+		}
+	}
+}
+
+
+void drawParameters(void) {
+	double multiplier;
+	{
+		std::lock_guard<std::mutex> lg(*fieldMutex);
+		multiplier=(*field)->getTimeMultiplier();
+	}
+	std::stringstream tmp;
+	tmp << multiplier;
+	drawString("Mnoznik czasu:"+tmp.str()+"x", 15, -glutGet(GLUT_WINDOW_HEIGHT)+15, GLUT_BITMAP_HELVETICA_18);
+}
+
+void initDisplayMatrixModeBackground(void) {
+	glClearColor(1.0, 1.0, 0.94, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glTranslated(0, 0, -_near * 3);
+
+	glRotated(rotatex, 1.0, 0.0, 0.0);
+	glRotated(rotatey, 0.0, 1.0, 0.0);
+	glRotated(rotatez, 0.0, 0.0, 1.0);
+
+	glTranslated(translatex, translatey, translatez);
+
+	drawAxis();
+
+	glPushMatrix();
+	glScaled(3 * _near / 10, 3 * _near / 10, 3 * _near / 10);
+	drawOrigin();
+	glPopMatrix();
+
+	glScaled(scale, scale, scale);
+}
+
 void display(void) {
 	initDisplayMatrixModeBackground();
 	glColor3d(0.0, 0.0, 0.0);
 	drawObjectsList();
+	drawParameters();
 	drawObjects();
 	glFlush();
 	glutSwapBuffers();
+}
+
+void idle(void) {
+	glutPostRedisplay();
 }
 
 void calculateScene(void) {
@@ -352,9 +369,10 @@ void menu(int value)
 void initFunc(void) {
 	glutInit(&argcp, &argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(glutGet(GLUT_SCREEN_WIDTH), static_cast<int>(glutGet(GLUT_SCREEN_HEIGHT)*0.94));
+	glutInitWindowSize(static_cast<int>(glutGet(GLUT_SCREEN_WIDTH)*0.9), static_cast<int>(glutGet(GLUT_SCREEN_HEIGHT)*0.9));
 	glutCreateWindow("Planety");
 	glutDisplayFunc(display);
+	glutIdleFunc(idle);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(specialKeys);

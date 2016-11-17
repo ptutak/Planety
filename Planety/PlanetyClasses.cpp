@@ -147,26 +147,31 @@ void gravityField::addMultiplier(double add) {
 
 
 void gravityField::addObject(flyingObject* next) {
-	std::lock_guard<std::mutex> lg(objectsMutex);
-	for (auto x : objects) {
-		if (x->name == next->name)
-			throw std::invalid_argument("Obiekt o nazwie " + next->getName() + " juz istnieje");
+	{
+		std::lock_guard<std::mutex> lg(objectsMutex);
+		for (auto x : objects) {
+			if (x->name == next->name)
+				throw std::invalid_argument("Obiekt o nazwie " + next->getName() + " juz istnieje");
+		}
+		objects.push_back(next);
 	}
-	objects.push_back(next);
-	if (next->x > maxX)
-		maxX = next->x;
-	else if (next->x < minX)
-		minX = next->x;
-	if (next->y > maxY)
-		maxY = next->y;
-	else if (next->y < minY)
-		minY = next->y;
-	if (next->z > maxZ)
-		maxZ = next->z;
-	else if (next->z < minZ)
-		minZ = next->z;
-	if (next->d > maxD)
-		maxD = next->d;
+	{
+		std::lock_guard<std::mutex> lg(multiplierMutex);
+		if (next->x > maxX)
+			maxX = next->x;
+		else if (next->x < minX)
+			minX = next->x;
+		if (next->y > maxY)
+			maxY = next->y;
+		else if (next->y < minY)
+			minY = next->y;
+		if (next->z > maxZ)
+			maxZ = next->z;
+		else if (next->z < minZ)
+			minZ = next->z;
+		if (next->d > maxD)
+			maxD = next->d;
+	}
 }
 
 void gravityField::computeGravity(double dt) {
@@ -277,9 +282,9 @@ void gravityField::printObjectsList(std::ostream& out, int prec) const {
 	}
 }
 void gravityField::removeObject(const std::string name) {
-	std::lock_guard<std::mutex> lg(objectsMutex);
 	std::list<flyingObject*>::const_iterator pos;
 	for (pos = objects.cbegin(); pos != objects.cend(); pos++) {
+		std::lock_guard<std::mutex> lg(objectsMutex);
 		if ((*pos)->name == name) {
 			flyingObject* tmp = *pos;
 			objects.erase(pos);
@@ -294,21 +299,25 @@ void gravityField::removeObject(const std::string name) {
 	minY = .0;
 	minZ = .0;
 	maxD = .0;
-	for (auto i : objects) {
-		if (i->x > maxX)
-			maxX = i->x;
-		else if (i->x < minX)
-			minX = i->x;
-		if (i->y > maxY)
-			maxY = i->y;
-		else if (i->y < minY)
-			minY = i->y;
-		if (i->z > maxZ)
-			maxZ = i->z;
-		else if (i->z < minZ)
-			minZ = i->z;
-		if (i->d > maxD)
-			maxD = i->d;
+	{
+		std::lock_guard<std::mutex> lg(objectsMutex);
+		for (auto i : objects) {
+			std::lock_guard<std::mutex> lg(maxMutex);
+			if (i->x > maxX)
+				maxX = i->x;
+			else if (i->x < minX)
+				minX = i->x;
+			if (i->y > maxY)
+				maxY = i->y;
+			else if (i->y < minY)
+				minY = i->y;
+			if (i->z > maxZ)
+				maxZ = i->z;
+			else if (i->z < minZ)
+				minZ = i->z;
+			if (i->d > maxD)
+				maxD = i->d;
+		}
 	}
 }
 bool gravityField::searchObject(const std::string name) const {

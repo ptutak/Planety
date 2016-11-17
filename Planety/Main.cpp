@@ -3,12 +3,10 @@
 
 int main(void)
 {
-	std::mutex mutex;
-
-	//	init();
+/*	std::mutex mutex;
 	gravityField* tmp = new gravityField;
-	tmp->addObject(new flyingObject{ "Ziemia",1000,100000,0,0,15 });
-	tmp->addObject(new flyingObject{ "Wenus",10000, 1000,150000 });
+	tmp->addObject(new flyingObject{ "Ziemia",5.9722e+24,0,0,0,0,0,0,0 });
+	tmp->addObject(new flyingObject{ "Object1",1,0,6378000,0,0,0,7910,0 });
 	try {
 		startRendering(&tmp,&mutex);
 	}
@@ -23,8 +21,10 @@ int main(void)
 		system("pause");
 		return 0;
 	}
+*/	
 	//	std::cout << "jestem tu, po wyjsciu z loop" << std::endl;
-	
+
+	init();
 	system("pause");
 }
 	

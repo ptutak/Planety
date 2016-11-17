@@ -231,6 +231,7 @@ void startSimulationMenu(gravityField* gravField) {
 		if (dif > FRAME_SIZE) {
 			gravField->computeGravity((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz);
 		}
+		std::cout << dif << ' ';
 		do
 			dif = clock() - start_clock;
 		while (dif < FRAME_SIZE);
@@ -344,7 +345,7 @@ void init(void) {
 			std::cout << "5 - Zapisz konfiguracje do pliku" << std::endl;
 			std::cout << "6 - Wczytaj konfiguracje z pliku" << std::endl;
 			std::cout << "7 - Wyczysc obiekty" << std::endl;
-			std::cout << "8 - Deweloper mode" << std::endl;
+			std::cout << "8 - Tryb tworcy" << std::endl;
 			std::cout << "9 - Wyjdz" << std::endl;
 			choice = std::cin.peek();
 			std::getline(std::cin, tmp);
@@ -382,6 +383,7 @@ void init(void) {
 			developerModeMenu(gravField);
 			break;
 		case '9':
+			std::lock_guard<std::mutex> lg(fieldMutex);
 			delete gravField;
 			std::cout << "Goodbye" << std::endl;
 			return;
