@@ -16,14 +16,14 @@ constexpr double G = 6.6740831e-11;
 
 class simulationInfo {
 	int lastFrame;
-	clock_t startSimulationClock;
+	clock_t realClock;
 	std::mutex realTimeMutex;
 	std::mutex frameMutex;
 public:
 	int getLastFrame(void);
 	double getRealTime(void);
 	void setLastFrame(int fr);
-	void setStartClock();
+	void setRealClock();
 
 	simulationInfo() : lastFrame{ 0 } {}
 };

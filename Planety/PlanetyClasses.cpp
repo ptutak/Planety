@@ -12,15 +12,15 @@ int simulationInfo::getLastFrame(void) {
 }
 double simulationInfo::getRealTime(void) {
 	std::lock_guard<std::mutex> lg(realTimeMutex);
-	return ((clock() - startSimulationClock)/static_cast<double>(CLOCKS_PER_SEC));
+	return ((clock() - realClock)/static_cast<double>(CLOCKS_PER_SEC));
 }
 void simulationInfo::setLastFrame(int fr) {
 	std::lock_guard<std::mutex> lg(frameMutex);
 	lastFrame = fr;
 }
-void simulationInfo::setStartClock() {
+void simulationInfo::setRealClock() {
 	std::lock_guard<std::mutex> lg(realTimeMutex);
-	startSimulationClock = clock();
+	realClock = clock();
 }
 
 /*

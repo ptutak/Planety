@@ -344,6 +344,9 @@ void keyboard(unsigned char key, int x, int y) {
 		(*field)->setTimeMultiplier(1.0);
 	}
 	break;
+	case 8: 
+		getInfo().setRealClock();
+		break;
 	case 27:
 		glutLeaveMainLoop();
 		break;

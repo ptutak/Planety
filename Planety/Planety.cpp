@@ -222,6 +222,7 @@ void startSimulationMenu(gravityField* gravField) {
 	std::cout << "SHIFT - ustawia mnoznik czasu na 0.0 - zatrzymuje symulacje" << std::endl;
 	std::cout << "STRZALKI - przesuwaja obiekty w oknie symulacji wzgledem osi x i y" << std::endl;
 	std::cout << "PGUP,PGDOWN - przesuwaja obiekty wzgledem osi z" << std::endl;
+	std::cout << "BACKSPACE - resetuje czas rzeczywisty" << std::endl;
 	std::cout << "+,- - zwiekszaja/zmniejszaja mnoznik czasu co 0.5" << std::endl;
 	std::cout << "*,/ - mnoza mnoznik czasu przez 2, 0.5" << std::endl;
 	std::cout << "KOLKO MYSZKI - zwieksza, zmniejsza obiekty w oknie symulacji" << std::endl;
@@ -239,7 +240,7 @@ void startSimulationMenu(gravityField* gravField) {
 		std::cerr << x.what() << std::endl;
 	}
 	start_clock = clock();
-	getInfo().setStartClock();
+	getInfo().setRealClock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
 		getInfo().setLastFrame(dif);
 		gravField->computeGravity(frSiz);
