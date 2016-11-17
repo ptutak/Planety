@@ -222,7 +222,8 @@ void startSimulationMenu(gravityField* gravField) {
 	std::cout << "SHIFT - ustawia mnoznik czasu na 0.0 - zatrzymuje symulacje" << std::endl;
 	std::cout << "STRZALKI - przesuwaja obiekty w oknie symulacji wzgledem osi x i y" << std::endl;
 	std::cout << "PGUP,PGDOWN - przesuwaja obiekty wzgledem osi z" << std::endl;
-	std::cout << "+/- - zwiekszaja/zmniejszaja mnoznik czasu co 0.5" << std::endl;
+	std::cout << "+,- - zwiekszaja/zmniejszaja mnoznik czasu co 0.5" << std::endl;
+	std::cout << "*,/ - mnoza mnoznik czasu przez 2, 0.5" << std::endl;
 	std::cout << "KOLKO MYSZKI - zwieksza, zmniejsza obiekty w oknie symulacji" << std::endl;
 	std::cout << "NACISNIJ I PRZYTRZYMAJ LEWY PRZYCISK MYSZY - by zaczac obracac obiektami" << std::endl;
 	std::cout << "PRAWY PRZYCISK MYSZY - menu podreczne" << std::endl;
@@ -238,16 +239,22 @@ void startSimulationMenu(gravityField* gravField) {
 		std::cerr << x.what() << std::endl;
 	}
 	start_clock = clock();
+	getInfo().setStartClock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
+		getInfo().setLastFrame(dif);
 		gravField->computeGravity(frSiz);
 		if (dif > FRAME_SIZE) {
-			gravField->computeGravity((static_cast<double>(dif) / static_cast<double>(CLOCKS_PER_SEC)) - frSiz);
+			int multi = dif - FRAME_SIZE;
+			int rest = multi%FRAME_SIZE;
+			multi = multi / FRAME_SIZE;
+			for (; multi > 0; --multi)
+				gravField->computeGravity(frSiz);
+			gravField->computeGravity(rest / static_cast<double>(CLOCKS_PER_SEC));
 		}
-		std::cout << dif << ' ';
 		do
 			dif = clock() - start_clock;
 		while (dif < FRAME_SIZE);
-		start_clock = clock();					//pocz¹tek liczenia czasu kolejnej iteracji
+		start_clock = clock();
 	}
 	renderingThread.join();
 }
@@ -327,6 +334,7 @@ void computeTimeMenu(gravityField* gravField) {
 	std::cin >> frame;
 	double currentTime = 0.0;
 	double newFrame = frame / static_cast<double>(1000);
+	gravField->setTimeMultiplier(1.0);
 	while (currentTime < time) {
 		gravField->computeGravity(newFrame);
 		currentTime += newFrame;
@@ -336,7 +344,7 @@ void computeTimeMenu(gravityField* gravField) {
 	std::getline(std::cin, tmp);
 }
 
-void changeConstTime(void) {
+void changeConstTimeMenu(void) {
 	std::cout << "UWAGA!!!" << std::endl;
 	std::cout << "Zmiana stalej ramki czasu moze wplynac na dokladnosc i czas obliczen," << std::endl;
 	std::cout << "dokonujac tych zmian robisz to na wlasna odpowiedzialnosc!"<<std::endl;
@@ -361,6 +369,20 @@ void changeConstTime(void) {
 	std::cout << "OK - nie zmieniam" << std::endl;
 }
 
+void resetSimulTimeMenu(gravityField* gravField) {
+	std::cout << "Czy na pewno chcesz zresetowac czas symulacji?[Tt/cokolwiek]" << std::endl;
+	char c;
+	std::string tmp;
+	std::cin >> c;
+	std::getline(std::cin, tmp);
+	if (c == 'T' || c == 't') {
+		gravField->resetTotalTime();
+		std::cout << "OK - zresetowano" << std::endl;
+		return;
+	}
+	std::cout << "Nie resetuje" << std::endl;
+}
+
 void optionsMenu(gravityField* gravField) {
 	char choice;
 	std::string tmp;
@@ -368,16 +390,20 @@ void optionsMenu(gravityField* gravField) {
 		std::cout << std::endl;
 		std::cout << "0 - Przesun obiekty w czasie" << std::endl;
 		std::cout << "1 - Zmien stala ramki czasu" << std::endl;
+		std::cout << "2 - zresetuj czas symulacji" << std::endl;
 		std::cout << "9 - Wyjdz" << std::endl;
 		choice = std::cin.peek();
 		std::getline(std::cin, tmp);
-	} while (choice < '0' || choice > '1' && choice!='9');
+	} while (choice < '0' || choice > '2' && choice!='9');
 	switch (choice) {
 	case '0':
 		computeTimeMenu(gravField);
 		break;
 	case '1':
-		changeConstTime();
+		changeConstTimeMenu();
+		break;
+	case '2':
+		resetSimulTimeMenu(gravField);
 		break;
 	case '9':
 		break;

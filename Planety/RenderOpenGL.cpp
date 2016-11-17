@@ -172,16 +172,53 @@ void drawObjectsList(void) {
 	}
 }
 
+std::string reformatSec(double sec) {
+	double restSec;
+	unsigned long long mins;
+	unsigned long hours;
+	unsigned long days;
+	unsigned long years;
+	mins = static_cast<unsigned long long>(sec) / 60;
+	restSec = sec - static_cast<double>(mins * 60);
+	hours = static_cast<unsigned long>(mins / 60);
+	mins = mins % 60;
+	days = hours / 24;
+	hours = hours % 24;
+	years = days / 365;
+	days = days % 365;
+	std::stringstream tmp;
+	if (years)
+		tmp << years<<"y ";
+	if (days)
+		tmp << days << "d ";
+	if (hours)
+		tmp << hours << "h ";
+	if (mins)
+		tmp << mins << "m ";
+	tmp << restSec << "s";
+	return tmp.str();
+}
 
 void drawParameters(void) {
 	double multiplier;
+	int lastFrame = getInfo().getLastFrame();
+	double realTime = getInfo().getRealTime();
+	double simulTime;
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
 		multiplier=(*field)->getTimeMultiplier();
+		simulTime = (*field)->getSimulTime();
 	}
+
 	std::stringstream tmp;
 	tmp << multiplier;
-	drawString("Mnoznik czasu:"+tmp.str()+"x", 15, -glutGet(GLUT_WINDOW_HEIGHT)+15, GLUT_BITMAP_HELVETICA_18);
+	drawString("Mnoznik czasu:"+tmp.str()+"x", 15, -glutGet(GLUT_WINDOW_HEIGHT)+69, GLUT_BITMAP_HELVETICA_18);
+	tmp.str("");
+	tmp.clear();
+	tmp << lastFrame;
+	drawString("Czas opoznienia:" + tmp.str() + "ms", 15, -glutGet(GLUT_WINDOW_HEIGHT) + 51, GLUT_BITMAP_HELVETICA_18);
+	drawString("Czas symulacji:" + reformatSec(simulTime), 15, -glutGet(GLUT_WINDOW_HEIGHT) + 33, GLUT_BITMAP_HELVETICA_18);
+	drawString("Czas rzeczywisty:" + reformatSec(realTime), 15, -glutGet(GLUT_WINDOW_HEIGHT) + 15, GLUT_BITMAP_HELVETICA_18);
 }
 
 void initDisplayMatrixModeBackground(void) {
@@ -287,6 +324,18 @@ void keyboard(unsigned char key, int x, int y) {
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
 		(*field)->addMultiplier(-0.5);
+	}
+	break;
+	case '*':
+	{
+		std::lock_guard<std::mutex> lg(*fieldMutex);
+		(*field)->multiplyMultiplier(2.0);
+	}
+	break;
+	case '/':
+	{
+		std::lock_guard<std::mutex> lg(*fieldMutex);
+		(*field)->multiplyMultiplier(0.5);
 	}
 	break;
 	case ' ':

@@ -3,6 +3,7 @@
 #include <mutex>
 #include <list>
 #include <cmath>
+#include <ctime>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -11,6 +12,23 @@
 // CONSTANTS
 constexpr double G = 6.6740831e-11;
 
+//SIMULATION INFO
+
+class simulationInfo {
+	int lastFrame;
+	clock_t startSimulationClock;
+	std::mutex realTimeMutex;
+	std::mutex frameMutex;
+public:
+	int getLastFrame(void);
+	double getRealTime(void);
+	void setLastFrame(int fr);
+	void setStartClock();
+
+	simulationInfo() : lastFrame{ 0 } {}
+};
+
+simulationInfo& getInfo(void);
 /*
 
 CLASS FLYING OBJECT
@@ -129,7 +147,9 @@ class gravityField
 	double minZ;
 	double maxD;
 	double timeMultiplier;
+	double simulTime;
 	std::list<flyingObject*> objects;
+	mutable std::mutex simulTimeMutex;
 	mutable std::mutex multiplierMutex;
 	mutable std::mutex maxMutex;
 public:
@@ -138,6 +158,7 @@ public:
 	void addMultiplier(double add);
 	void addObject(flyingObject* next);
 	void computeGravity(double dt);
+	void multiplyMultiplier(double multi);
 	void printObjects(void) const;
 	void printObjectsList(std::ostream& out, int precision = -1) const;
 	void removeObject(const std::string name);
@@ -151,10 +172,12 @@ public:
 	double getMinZ(void) const { std::lock_guard<std::mutex> lg(maxMutex); return minZ; }
 	double getMaxD(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxD; }
 	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return timeMultiplier; }
+	double getSimulTime(void) const { std::lock_guard<std::mutex> lg(simulTimeMutex); return simulTime; }
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
 	
+	void resetTotalTime(void) { std::lock_guard<std::mutex> lg(simulTimeMutex); simulTime=0.0; }
 	void setTimeMultiplier(double multi);
 
-	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, timeMultiplier{ 0.0 } {};
+	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, timeMultiplier{ 0.0 }, simulTime{ 0.0 } {};
 	~gravityField(void);
 };

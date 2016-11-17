@@ -1,5 +1,28 @@
 #include "PlanetyClasses.h"
 
+
+//FRAME INFO
+simulationInfo info;
+
+simulationInfo& getInfo(void) { return info; }
+
+int simulationInfo::getLastFrame(void) {
+	std::lock_guard<std::mutex> lg(frameMutex);
+	return lastFrame;
+}
+double simulationInfo::getRealTime(void) {
+	std::lock_guard<std::mutex> lg(realTimeMutex);
+	return ((clock() - startSimulationClock)/static_cast<double>(CLOCKS_PER_SEC));
+}
+void simulationInfo::setLastFrame(int fr) {
+	std::lock_guard<std::mutex> lg(frameMutex);
+	lastFrame = fr;
+}
+void simulationInfo::setStartClock() {
+	std::lock_guard<std::mutex> lg(realTimeMutex);
+	startSimulationClock = clock();
+}
+
 /*
 
 CLASS FLYING OBJECT
@@ -175,14 +198,16 @@ void gravityField::addObject(flyingObject* next) {
 }
 
 void gravityField::computeGravity(double dt) {
-	int multi;
+	double multi;
 	double rest;
+	int intMulti;
 	{
 		std::lock_guard<std::mutex> lg(multiplierMutex);
-		multi = static_cast<int>(timeMultiplier);
-		rest = timeMultiplier - static_cast<double>(multi);
+		multi = timeMultiplier;
 	}
-	for (;multi>0;--multi)
+	intMulti = static_cast<int>(multi);
+	rest = multi - static_cast<double>(intMulti);
+	for (;intMulti>0;--intMulti)
 		for (auto i : objects) {
 			double Ex = 0.0;
 			double Ey = 0.0;
@@ -266,8 +291,19 @@ void gravityField::computeGravity(double dt) {
 					maxD = i->d;
 			}
 		}
+	{
+		std::lock_guard<std::mutex> lg(simulTimeMutex);
+		simulTime += dt*multi;
+	}
 }
-
+void gravityField::multiplyMultiplier(double multi) {
+	if (multi < 0.0)
+		return;
+	std::lock_guard<std::mutex> lg(multiplierMutex);
+	timeMultiplier *= multi;
+	if (timeMultiplier > 10000.0)
+		timeMultiplier = 10000.0;
+}
 void gravityField::printObjects(void) const {
 	std::lock_guard<std::mutex> lg(objectsMutex);
 	for (const auto x : objects) {
