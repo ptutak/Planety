@@ -276,24 +276,36 @@ void reshape(int width, int height) {
 }
 
 void keyboard(unsigned char key, int x, int y) {
-	if (key == '+')
+	switch (key) {
+	case '+':
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
 		(*field)->addMultiplier(0.5);
 	}
-	if (key == '-')
+	break;
+	case '-':
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
 		(*field)->addMultiplier(-0.5);
 	}
-	if (key == 27)
+	break;
+	case ' ':
+	{
+		std::lock_guard<std::mutex> lg(*fieldMutex);
+		(*field)->setTimeMultiplier(1.0);
+	}
+	break;
+	case 27:
 		glutLeaveMainLoop();
-	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+		break;
+	}
+	display();
+//	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 void specialKeys(int key, int x, int y)
 {
-	double scaleTr = (right - left)*0.05;
+	double scaleTr = (right - left)*0.05*scale;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
@@ -313,8 +325,21 @@ void specialKeys(int key, int x, int y)
 	case GLUT_KEY_PAGE_DOWN:
 		translatez -= scaleTr;
 		break;
+	case GLUT_KEY_SHIFT_L:
+		{
+			std::lock_guard<std::mutex> lg(*fieldMutex);
+			(*field)->setTimeMultiplier(0.0);
+		}
+		break;
+	case GLUT_KEY_SHIFT_R:
+		{
+			std::lock_guard<std::mutex> lg(*fieldMutex);
+			(*field)->setTimeMultiplier(0.0);
+		}
+		break;
 	}
-	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+	display();
+//	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 void mouseButton(int button, int state, int x, int y) {
@@ -386,12 +411,10 @@ void initMenu(void) {
 	glutAddMenuEntry("kamera manualna", MANUAL_CAMERA);
 //	glutAddMenuEntry("kamera automatyczna", AUTOMATIC_CAMERA);
 
-	int menuObject = glutCreateMenu(menu);
 	// menu g³ówne
 
 	glutCreateMenu(menu);
-	glutAddSubMenu("Aspekt obrazu", menuAspect);
-	glutAddSubMenu("Obiekt", menuObject);
+	glutAddSubMenu("Tryb kamery", menuAspect);
 	glutAddMenuEntry("Wyjscie", EXIT);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

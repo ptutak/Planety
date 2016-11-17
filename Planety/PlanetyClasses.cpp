@@ -329,6 +329,13 @@ bool gravityField::searchObject(const std::string name) const {
 	return false;
 }
 
+void gravityField::setTimeMultiplier(double multi) {
+	std::lock_guard<std::mutex> lg(multiplierMutex);
+	timeMultiplier = multi;
+	if (timeMultiplier < 0.0)
+		timeMultiplier = 0.0;
+}
+
 gravityField::~gravityField(void) {
 	std::lock_guard<std::mutex> lg(objectsMutex);
 	while (!objects.empty()) {

@@ -134,7 +134,8 @@ class gravityField
 	mutable std::mutex maxMutex;
 public:
 	mutable std::mutex objectsMutex;
-	
+
+	void addMultiplier(double add);
 	void addObject(flyingObject* next);
 	void computeGravity(double dt);
 	void printObjects(void) const;
@@ -151,9 +152,9 @@ public:
 	double getMaxD(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxD; }
 	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return timeMultiplier; }
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
+	
+	void setTimeMultiplier(double multi);
 
-	void addMultiplier(double add);
-
-	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, timeMultiplier{ 1.0 } {};
+	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, timeMultiplier{ 0.0 } {};
 	~gravityField(void);
 };

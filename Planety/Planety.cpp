@@ -4,7 +4,10 @@
 std::mutex fieldMutex;
 
 //CONSTANTS
-const int FRAME_SIZE = 10;
+namespace constants {
+	int FRAME = 10;
+}
+const int& FRAME_SIZE = constants::FRAME;
 
 /*
 
@@ -138,7 +141,7 @@ MENU - FUNCTIONS
 void addObjectMenu(gravityField* gravField) {
 	std::cout << std::endl;
 	std::cout << "Podaj dane obiektu w formacie:" << std::endl;
-	std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
+	std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]...]" << std::endl;
 	flyingObject* made = readObjectFromStream(std::cin);
 	if (made) {
 		try {
@@ -189,7 +192,7 @@ void modifyObjectMenu(gravityField* gravField) {
 	if (name == "")
 		return;
 	if (gravField->searchObject(name)) {
-		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]]]]]]]]]]" << std::endl;
+		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]...]" << std::endl;
 		flyingObject* tmpObject = readObjectFromStream(std::cin);
 		if (gravField->searchObject(tmpObject->getName())&&(tmpObject->getName()!=name))
 		{
@@ -213,7 +216,16 @@ void startSimulationMenu(gravityField* gravField) {
 	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
 	std::thread renderingThread;
 	system("cls");
-	std::cout << "Nacisnij Enter, by rozpoczac symulacje, podczas symulacji nacisnij Escape by przerwac." << std::endl;
+	std::cout << "Nacisnij przycisk, by otworzyc okno symulacji, podczas symulacji nacisnij Escape by przerwac." << std::endl;
+	std::cout << "Obsluga:" << std::endl;
+	std::cout << "SPACE - ustawia mnoznik czasu na 1.0" << std::endl;
+	std::cout << "SHIFT - ustawia mnoznik czasu na 0.0 - zatrzymuje symulacje" << std::endl;
+	std::cout << "STRZALKI - przesuwaja obiekty w oknie symulacji wzgledem osi x i y" << std::endl;
+	std::cout << "PGUP,PGDOWN - przesuwaja obiekty wzgledem osi z" << std::endl;
+	std::cout << "+/- - zwiekszaja/zmniejszaja mnoznik czasu co 0.5" << std::endl;
+	std::cout << "KOLKO MYSZKI - zwieksza, zmniejsza obiekty w oknie symulacji" << std::endl;
+	std::cout << "NACISNIJ I PRZYTRZYMAJ LEWY PRZYCISK MYSZY - by zaczac obracac obiektami" << std::endl;
+	std::cout << "PRAWY PRZYCISK MYSZY - menu podreczne" << std::endl;
 	system("pause");
 	try {
 		renderingThread = std::thread(startRendering, &gravField, &fieldMutex);
@@ -306,7 +318,7 @@ void deleteAllObjectsMenu(gravityField*& gravField) {
 	std::cout << "Nie usuwam" << std::endl;
 }
 
-void developerModeMenu(gravityField* gravField) {
+void computeTimeMenu(gravityField* gravField) {
 	std::cout << "Podaj czas obliczen w s:" << std::endl;
 	double time;
 	std::cin >> time;
@@ -322,6 +334,54 @@ void developerModeMenu(gravityField* gravField) {
 	gravField->printObjects();
 	std::string tmp;
 	std::getline(std::cin, tmp);
+}
+
+void changeConstTime(void) {
+	std::cout << "UWAGA!!!" << std::endl;
+	std::cout << "Zmiana stalej ramki czasu moze wplynac na dokladnosc i czas obliczen," << std::endl;
+	std::cout << "dokonujac tych zmian robisz to na wlasna odpowiedzialnosc!"<<std::endl;
+	std::cout << "Czy na pewno chcesz zmienic stala ramki czasu? [Tt/cokolwiek]" << std::endl;
+	char c;
+	std::string tmp;
+	std::cin >> c;
+	std::getline(std::cin, tmp);
+	if (c == 'T' || c == 't') {
+		std::cout << "Obecna ramka czasu: " << FRAME_SIZE <<"ms"<< std::endl;
+		std::cout << "Podaj nowa ramke czasu w milisekundach - liczba calkowita dodatnia" << std::endl;
+		int newFrame;
+		do {
+			newFrame;
+			std::cin >> newFrame;
+		} while (newFrame < 0);
+		std::getline(std::cin, tmp);
+		const_cast<int&>(FRAME_SIZE) = newFrame;
+		std::cout << "Zmieniono, nowa ramka to: " << FRAME_SIZE << "ms" << std::endl;
+		return;
+	}
+	std::cout << "OK - nie zmieniam" << std::endl;
+}
+
+void optionsMenu(gravityField* gravField) {
+	char choice;
+	std::string tmp;
+	do {
+		std::cout << std::endl;
+		std::cout << "0 - Przesun obiekty w czasie" << std::endl;
+		std::cout << "1 - Zmien stala ramki czasu" << std::endl;
+		std::cout << "9 - Wyjdz" << std::endl;
+		choice = std::cin.peek();
+		std::getline(std::cin, tmp);
+	} while (choice < '0' || choice > '1' && choice!='9');
+	switch (choice) {
+	case '0':
+		computeTimeMenu(gravField);
+		break;
+	case '1':
+		changeConstTime();
+		break;
+	case '9':
+		break;
+	}
 }
 /*
 
@@ -345,7 +405,7 @@ void init(void) {
 			std::cout << "5 - Zapisz konfiguracje do pliku" << std::endl;
 			std::cout << "6 - Wczytaj konfiguracje z pliku" << std::endl;
 			std::cout << "7 - Wyczysc obiekty" << std::endl;
-			std::cout << "8 - Tryb tworcy" << std::endl;
+			std::cout << "8 - Opcje" << std::endl;
 			std::cout << "9 - Wyjdz" << std::endl;
 			choice = std::cin.peek();
 			std::getline(std::cin, tmp);
@@ -380,7 +440,7 @@ void init(void) {
 			deleteAllObjectsMenu(gravField);
 			break;
 		case '8':
-			developerModeMenu(gravField);
+			optionsMenu(gravField);
 			break;
 		case '9':
 			std::lock_guard<std::mutex> lg(fieldMutex);
