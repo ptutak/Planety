@@ -64,7 +64,7 @@ void drawOrigin(void) {
 	glVertex3d(0.0, 1.0, 0.0);
 	glVertex3d(0.0, 0.7, 0.15);
 
-	glColor3d(0.0, 1.0, 0.0);
+	glColor3d(0.0, 0.9, 0.10);
 
 	glVertex3d(0.0, 0.0, 1.0);
 	glVertex3d(0.0, 0.0, 0.0);
@@ -81,7 +81,7 @@ void drawOrigin(void) {
 	glRasterPos3d(-0.25, 1.0, -0.25);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('y'));
 
-	glColor3d(0.0, 1.0, 0.0);
+	glColor3d(0.0, 0.9, 0.10);
 	glRasterPos3d(-0.25, -0.25, 1.0);
 	glutBitmapCharacter(GLUT_BITMAP_9_BY_15, static_cast<int>('z'));
 	glLineWidth(1.0);
@@ -98,7 +98,7 @@ void drawAxis(void) {
 	glColor3d(0, 0, 1);
 	glVertex3d(0, -1, 0);
 	glVertex3d(0, 1, 0);
-	glColor3d(0, 1, 0);
+	glColor3d(0, 0.9, 0.1);
 	glVertex3d(0, 0, -1);
 	glVertex3d(0, 0, 1);
 	glEnd();
@@ -111,17 +111,27 @@ void drawObjects(void) {
 	glColor3d(0, 0, 0);
 	for (const auto i : (*field)->getObjects()) {
 		double x, y, z, d;
+		std::string name;
 		{
 			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
 			x = i->getX();
 			y = i->getY();
 			z = i->getZ();
 			d = i->getDiameter();
+			name = i->getName();
 		}
+		d = d / 2.0;
 		glPushMatrix();
 		glTranslated(x, y, z);
+		glRasterPos3d(0.95*d, 0.95*d, 0.0);
+		for (unsigned int i = 0; i < name.length(); i++)
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, name[i]);
+		glBegin(GL_LINES);
+		glVertex3d(0.707*d, 0.707*d, 0.0);
+		glVertex3d(0.95*d, 0.95*d, 0.0);
+		glEnd();
 		glRotated(90, 1, 0, 0);
-		glutWireSphere(d / 2, 40, 20);
+		glutWireSphere(d, 40, 20);
 		glPopMatrix();
 	}
 }
@@ -365,7 +375,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 void specialKeys(int key, int x, int y)
 {
-	double scaleTr = (right - left)*0.01;
+	double scaleTr = (right - left)*0.03;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
