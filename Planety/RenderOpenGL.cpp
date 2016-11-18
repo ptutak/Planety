@@ -365,7 +365,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 void specialKeys(int key, int x, int y)
 {
-	double scaleTr = (right - left)*0.05*scale;
+	double scaleTr = (right - left)*0.01;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
