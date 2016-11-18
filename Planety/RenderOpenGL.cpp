@@ -4,6 +4,9 @@ enum
 {
 	AUTOMATIC_CAMERA, //nie zaimplementowano
 	MANUAL_CAMERA, 
+	DESCRIPTION_ON_OFF,
+	FLOATING_DESCRIPTION_ON_OFF,
+	PARAMETERS_ON_OFF,
 	EXIT
 };
 
@@ -35,6 +38,10 @@ int buttonState = GLUT_UP;
 int mouseButtonX;
 int mouseButtonY;
 
+bool toggleDescription = true;
+bool toggleFloatingDescription = true;
+bool toggleParameters = true;
+
 
 void drawCircle(double radius)
 {
@@ -45,6 +52,25 @@ void drawCircle(double radius)
 		glVertex3d(cos(degInRad)*radius, sin(degInRad)*radius, 0.0);
 	}
 	glEnd();
+}
+
+void drawAxis(void) {
+	glPushMatrix();
+	glScaled((_far - _near)*1.3, (_far - _near)*1.3,( _far - _near)*1.3);
+	
+	glBegin(GL_LINES);
+	glColor3d(1, 0, 0);
+	glVertex3d(-1, 0, 0);
+	glVertex3d(1, 0, 0);
+	glColor3d(0, 0, 1);
+	glVertex3d(0, -1, 0);
+	glVertex3d(0, 1, 0);
+	glColor3d(0, 0.9, 0.1);
+	glVertex3d(0, 0, -1);
+	glVertex3d(0, 0, 1);
+	glEnd();
+	
+	glPopMatrix();
 }
 
 void drawOrigin(void) {
@@ -87,53 +113,28 @@ void drawOrigin(void) {
 	glLineWidth(1.0);
 }
 
-void drawAxis(void) {
-	glPushMatrix();
-	glScaled((_far - _near)*1.3, (_far - _near)*1.3,( _far - _near)*1.3);
-	
-	glBegin(GL_LINES);
-	glColor3d(1, 0, 0);
-	glVertex3d(-1, 0, 0);
-	glVertex3d(1, 0, 0);
-	glColor3d(0, 0, 1);
-	glVertex3d(0, -1, 0);
-	glVertex3d(0, 1, 0);
-	glColor3d(0, 0.9, 0.1);
-	glVertex3d(0, 0, -1);
-	glVertex3d(0, 0, 1);
-	glEnd();
-	
-	glPopMatrix();
-}
+void initDisplayMatrixModeBackground(void) {
+	glClearColor(1.0, 1.0, 0.94, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
-void drawObjects(void) {
-	std::lock_guard<std::mutex> lg(*fieldMutex);
-	glColor3d(0, 0, 0);
-	for (const auto i : (*field)->getObjects()) {
-		double x, y, z, d;
-		std::string name;
-		{
-			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
-			x = i->getX();
-			y = i->getY();
-			z = i->getZ();
-			d = i->getDiameter();
-			name = i->getName();
-		}
-		d = d / 2.0;
-		glPushMatrix();
-		glTranslated(x, y, z);
-		glRasterPos3d(0.95*d, 0.95*d, 0.0);
-		for (unsigned int i = 0; i < name.length(); i++)
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, name[i]);
-		glBegin(GL_LINES);
-		glVertex3d(0.707*d, 0.707*d, 0.0);
-		glVertex3d(0.95*d, 0.95*d, 0.0);
-		glEnd();
-		glRotated(90, 1, 0, 0);
-		glutWireSphere(d, 40, 20);
-		glPopMatrix();
-	}
+	glTranslated(0, 0, -_near * 3);
+
+	glRotated(rotatex, 1.0, 0.0, 0.0);
+	glRotated(rotatey, 0.0, 1.0, 0.0);
+	glRotated(rotatez, 0.0, 0.0, 1.0);
+
+	glTranslated(translatex, translatey, translatez);
+
+	drawAxis();
+
+	glPushMatrix();
+	glScaled(3 * _near / 10, 3 * _near / 10, 3 * _near / 10);
+	drawOrigin();
+	glPopMatrix();
+
+	glScaled(scale, scale, scale);
 }
 
 void drawString(std::string s, int x, int y, void * font) {
@@ -235,36 +236,49 @@ void drawParameters(void) {
 	drawString("Czas symulacji:" + reformatSec(simulTime), 15, -glutGet(GLUT_WINDOW_HEIGHT) + 33, GLUT_BITMAP_HELVETICA_18);
 	drawString("Czas rzeczywisty:" + reformatSec(realTime), 15, -glutGet(GLUT_WINDOW_HEIGHT) + 15, GLUT_BITMAP_HELVETICA_18);
 }
-
-void initDisplayMatrixModeBackground(void) {
-	glClearColor(1.0, 1.0, 0.94, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glTranslated(0, 0, -_near * 3);
-
-	glRotated(rotatex, 1.0, 0.0, 0.0);
-	glRotated(rotatey, 0.0, 1.0, 0.0);
-	glRotated(rotatez, 0.0, 0.0, 1.0);
-
-	glTranslated(translatex, translatey, translatez);
-
-	drawAxis();
-
-	glPushMatrix();
-	glScaled(3 * _near / 10, 3 * _near / 10, 3 * _near / 10);
-	drawOrigin();
-	glPopMatrix();
-
-	glScaled(scale, scale, scale);
+void drawObjects(void) {
+	std::lock_guard<std::mutex> lg(*fieldMutex);
+	glColor3d(0, 0, 0);
+	for (const auto i : (*field)->getObjects()) {
+		double x, y, z, d;
+		std::string name;
+		{
+			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
+			x = i->getX();
+			y = i->getY();
+			z = i->getZ();
+			d = i->getDiameter();
+			name = i->getName();
+		}
+		d = d / 2.0;
+		glPushMatrix();
+		glTranslated(x, y, z);
+		if (toggleFloatingDescription) {
+			glPushMatrix();
+			glRotated(-rotatez, 0.0, 0.0, 1.0);
+			glRotated(-rotatey, 0.0, 1.0, 0.0);
+			glRotated(-rotatex, 1.0, 0.0, 0.0);
+			glRasterPos3d(0.95*d, 0.95*d, 0.0);
+			for (unsigned int i = 0; i < name.length(); i++)
+				glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, name[i]);
+			glBegin(GL_LINES);
+			glVertex3d(0.75*d, 0.75*d, 0.0);
+			glVertex3d(0.9*d, 0.9*d, 0.0);
+			glEnd();
+			glPopMatrix();
+		}
+		glRotated(90, 1, 0, 0);
+		glutWireSphere(d, 40, 20);
+		glPopMatrix();
+	}
 }
-
 void display(void) {
 	initDisplayMatrixModeBackground();
 	glColor3d(0.0, 0.0, 0.0);
-	drawObjectsList();
-	drawParameters();
+	if (toggleDescription)
+		drawObjectsList();
+	if (toggleParameters)
+		drawParameters();
 	drawObjects();
 	glFlush();
 	glutSwapBuffers();
@@ -456,6 +470,15 @@ void menu(int value)
 		aspect = MANUAL_CAMERA;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 		break;
+	case DESCRIPTION_ON_OFF:
+		toggleDescription = !toggleDescription;
+		break;
+	case FLOATING_DESCRIPTION_ON_OFF:
+		toggleFloatingDescription = !toggleFloatingDescription;
+		break;
+	case PARAMETERS_ON_OFF:
+		toggleParameters=!toggleParameters;
+		break;
 	case EXIT:
 		glutLeaveMainLoop();
 	}
@@ -478,13 +501,18 @@ void initFunc(void) {
 
 void initMenu(void) {
 	int menuAspect = glutCreateMenu(menu);
-	glutAddMenuEntry("kamera manualna", MANUAL_CAMERA);
-//	glutAddMenuEntry("kamera automatyczna", AUTOMATIC_CAMERA);
+	glutAddMenuEntry("Kamera manualna", MANUAL_CAMERA);
+//	glutAddMenuEntry("Kamera automatyczna", AUTOMATIC_CAMERA);
 
+	int menuDescription = glutCreateMenu(menu);
+	glutAddMenuEntry("Wlacz/Wylacz opisy", DESCRIPTION_ON_OFF);
+	glutAddMenuEntry("Wlacz/Wylacz latajace etykiety", FLOATING_DESCRIPTION_ON_OFF);
+	glutAddMenuEntry("Wlacz/Wylacz dane symulacji", PARAMETERS_ON_OFF);
 	// menu g³ówne
 
 	glutCreateMenu(menu);
 	glutAddSubMenu("Tryb kamery", menuAspect);
+	glutAddSubMenu("Opisy", menuDescription);
 	glutAddMenuEntry("Wyjscie", EXIT);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
