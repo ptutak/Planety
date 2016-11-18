@@ -163,9 +163,9 @@ void drawObjectsList(void) {
 			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
 			strm << *i;
 		}
-		drawStream(strm, leftPosition * 100, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
+		drawStream(strm, leftPosition * 110, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
 		++leftPosition;
-		if (((leftPosition + 1) * 100) > glutGet(GLUT_WINDOW_WIDTH)){
+		if (((leftPosition + 1) * 110) > glutGet(GLUT_WINDOW_WIDTH)){
 			leftPosition = 0;
 			topPosition++;
 		}
@@ -201,9 +201,10 @@ std::string reformatSec(double sec) {
 
 void drawParameters(void) {
 	double multiplier;
-	int lastFrame = getInfo().getLastFrame();
-	double realTime = getInfo().getRealTime();
 	double simulTime;
+	int lastFrame = getInfo().getLastFrame();
+	int constFrame = getInfo().getConstFrame();
+	double realTime = getInfo().getRealTime();
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
 		multiplier=(*field)->getTimeMultiplier();
@@ -211,6 +212,10 @@ void drawParameters(void) {
 	}
 
 	std::stringstream tmp;
+	tmp << constFrame;
+	drawString("Stala ramka czasu:" + tmp.str() + "ms", 15, -glutGet(GLUT_WINDOW_HEIGHT) + 87, GLUT_BITMAP_HELVETICA_18);
+	tmp.str("");
+	tmp.clear();
 	tmp << multiplier;
 	drawString("Mnoznik czasu:"+tmp.str()+"x", 15, -glutGet(GLUT_WINDOW_HEIGHT)+69, GLUT_BITMAP_HELVETICA_18);
 	tmp.str("");
@@ -345,7 +350,10 @@ void keyboard(unsigned char key, int x, int y) {
 	}
 	break;
 	case 8: 
-		getInfo().setRealClock();
+		getInfo().resetClock();
+		break;
+	case 13:
+		getInfo().startStopClock();
 		break;
 	case 27:
 		glutLeaveMainLoop();

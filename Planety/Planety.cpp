@@ -211,10 +211,6 @@ void modifyObjectMenu(gravityField* gravField) {
 }
 
 void startSimulationMenu(gravityField* gravField) {
-	clock_t start_clock;
-	clock_t dif = FRAME_SIZE;
-	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
-	std::thread renderingThread;
 	system("cls");
 	std::cout << "Nacisnij przycisk, by otworzyc okno symulacji, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	std::cout << "Obsluga:" << std::endl;
@@ -223,12 +219,19 @@ void startSimulationMenu(gravityField* gravField) {
 	std::cout << "STRZALKI - przesuwaja obiekty w oknie symulacji wzgledem osi x i y" << std::endl;
 	std::cout << "PGUP,PGDOWN - przesuwaja obiekty wzgledem osi z" << std::endl;
 	std::cout << "BACKSPACE - resetuje czas rzeczywisty" << std::endl;
+	std::cout << "ENTER - start,stop dla czasu rzeczywistego" << std::endl;
 	std::cout << "+,- - zwiekszaja/zmniejszaja mnoznik czasu co 0.5" << std::endl;
 	std::cout << "*,/ - mnoza mnoznik czasu przez 2, 0.5" << std::endl;
 	std::cout << "KOLKO MYSZKI - zwieksza, zmniejsza obiekty w oknie symulacji" << std::endl;
 	std::cout << "NACISNIJ I PRZYTRZYMAJ LEWY PRZYCISK MYSZY - by zaczac obracac obiektami" << std::endl;
 	std::cout << "PRAWY PRZYCISK MYSZY - menu podreczne" << std::endl;
 	system("pause");
+
+	clock_t start_clock;
+	clock_t dif = FRAME_SIZE;
+	getInfo().setConstFrame(FRAME_SIZE);
+	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
+	std::thread renderingThread;
 	try {
 		renderingThread = std::thread(startRendering, &gravField, &fieldMutex);
 	}
@@ -240,21 +243,22 @@ void startSimulationMenu(gravityField* gravField) {
 		std::cerr << x.what() << std::endl;
 	}
 	start_clock = clock();
-	getInfo().setRealClock();
+	getInfo().startStopClock();
 	while (!(GetAsyncKeyState(VK_ESCAPE))) {
 		getInfo().setLastFrame(dif);
 		gravField->computeGravity(frSiz);
+		int rest = 0;
 		if (dif > FRAME_SIZE) {
 			int multi = dif - FRAME_SIZE;
-			int rest = multi%FRAME_SIZE;
+			rest = multi%FRAME_SIZE;
 			multi = multi / FRAME_SIZE;
 			for (; multi > 0; --multi)
 				gravField->computeGravity(frSiz);
-			gravField->computeGravity(rest / static_cast<double>(CLOCKS_PER_SEC));
 		}
-		do
+		do {
 			dif = clock() - start_clock;
-		while (dif < FRAME_SIZE);
+			dif += rest;
+		} while (dif < FRAME_SIZE);
 		start_clock = clock();
 	}
 	renderingThread.join();

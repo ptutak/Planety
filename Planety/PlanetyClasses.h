@@ -16,16 +16,24 @@ constexpr double G = 6.6740831e-11;
 
 class simulationInfo {
 	int lastFrame;
-	clock_t realClock;
+	int constFrame;
+	bool clockOn;
+	clock_t startClock;
+	clock_t stopClock;
 	std::mutex realTimeMutex;
 	std::mutex frameMutex;
 public:
-	int getLastFrame(void);
-	double getRealTime(void);
-	void setLastFrame(int fr);
-	void setRealClock();
+	void startStopClock();
+	void resetClock();
 
-	simulationInfo() : lastFrame{ 0 } {}
+	int getLastFrame(void) { std::lock_guard<std::mutex> lg(frameMutex); return lastFrame; }
+	int getConstFrame(void){ std::lock_guard<std::mutex> lg(frameMutex); return constFrame; }
+	double getRealTime(void);
+	
+	void setLastFrame(int fr) {	std::lock_guard<std::mutex> lg(frameMutex);	lastFrame = fr;	}
+	void setConstFrame(int fr) { std::lock_guard<std::mutex> lg(frameMutex); constFrame = fr; }
+
+	simulationInfo() : lastFrame{ 0 }, constFrame{ 0 }, clockOn{ false }, startClock{ clock() } { stopClock = startClock; }
 };
 
 simulationInfo& getInfo(void);
@@ -146,7 +154,8 @@ class gravityField
 	double maxZ;
 	double minZ;
 	double maxD;
-	double timeMultiplier;
+	int intMultiplier;
+	double restMultiplier;
 	double simulTime;
 	std::list<flyingObject*> objects;
 	mutable std::mutex simulTimeMutex;
@@ -171,13 +180,13 @@ public:
 	double getMaxZ(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxZ; }
 	double getMinZ(void) const { std::lock_guard<std::mutex> lg(maxMutex); return minZ; }
 	double getMaxD(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxD; }
-	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return timeMultiplier; }
+	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return (static_cast<double>(intMultiplier)+restMultiplier); }
 	double getSimulTime(void) const { std::lock_guard<std::mutex> lg(simulTimeMutex); return simulTime; }
 	const std::list<flyingObject*>& getObjects(void) const { return objects; }
 	
 	void resetTotalTime(void) { std::lock_guard<std::mutex> lg(simulTimeMutex); simulTime=0.0; }
 	void setTimeMultiplier(double multi);
 
-	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, timeMultiplier{ 0.0 }, simulTime{ 0.0 } {};
+	gravityField(void) :maxX{ 0.0 }, minX{ 0.0 }, maxY{ 0.0 }, minY{ 0.0 }, maxZ{ 0.0 }, minZ{ 0.0 }, maxD{ 0.0 }, intMultiplier{ 0 }, restMultiplier{ 0.0 }, simulTime{ 0.0 } {};
 	~gravityField(void);
 };

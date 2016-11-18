@@ -6,21 +6,29 @@ simulationInfo info;
 
 simulationInfo& getInfo(void) { return info; }
 
-int simulationInfo::getLastFrame(void) {
-	std::lock_guard<std::mutex> lg(frameMutex);
-	return lastFrame;
-}
 double simulationInfo::getRealTime(void) {
 	std::lock_guard<std::mutex> lg(realTimeMutex);
-	return ((clock() - realClock)/static_cast<double>(CLOCKS_PER_SEC));
+	if (clockOn)
+		return ((clock() - startClock) / static_cast<double>(CLOCKS_PER_SEC));
+	else
+		return ((stopClock - startClock) / static_cast<double>(CLOCKS_PER_SEC));
 }
-void simulationInfo::setLastFrame(int fr) {
-	std::lock_guard<std::mutex> lg(frameMutex);
-	lastFrame = fr;
-}
-void simulationInfo::setRealClock() {
+void simulationInfo::startStopClock() {
 	std::lock_guard<std::mutex> lg(realTimeMutex);
-	realClock = clock();
+	if (clockOn)
+	{
+		stopClock = clock();
+		clockOn = false;
+	}
+	else {
+		startClock += clock()-stopClock;
+		clockOn = true;
+	}
+}
+void simulationInfo::resetClock(void) {
+	std::lock_guard<std::mutex> lg(realTimeMutex);
+	startClock = clock();
+	stopClock = startClock;
 }
 
 /*
@@ -163,9 +171,14 @@ CLASS GRAVITY FIELD
 */
 void gravityField::addMultiplier(double add) { 
 	std::lock_guard<std::mutex> lg(multiplierMutex);
-	timeMultiplier += add;
-	if (timeMultiplier < 0.0)
-		timeMultiplier = 0.0;
+	double multi = static_cast<double>(intMultiplier) + restMultiplier;
+	multi += add;
+	if (multi < 0.0)
+		multi = 0.0;
+	if (multi > 10000.0)
+		multi = 10000.0;
+	intMultiplier = static_cast<int>(multi);
+	restMultiplier = multi - static_cast<double>(intMultiplier);
 }
 
 
@@ -198,15 +211,14 @@ void gravityField::addObject(flyingObject* next) {
 }
 
 void gravityField::computeGravity(double dt) {
-	double multi;
-	double rest;
 	int intMulti;
+	double restMulti;
 	{
 		std::lock_guard<std::mutex> lg(multiplierMutex);
-		multi = timeMultiplier;
+		intMulti = intMultiplier;
+		restMulti = restMultiplier;
 	}
-	intMulti = static_cast<int>(multi);
-	rest = multi - static_cast<double>(intMulti);
+	double totalMulti = static_cast<double>(intMulti) + restMulti;
 	for (;intMulti>0;--intMulti)
 		for (auto i : objects) {
 			double Ex = 0.0;
@@ -249,7 +261,7 @@ void gravityField::computeGravity(double dt) {
 					maxD = i->d;
 			}
 		}
-	if (rest)
+	if (restMulti)
 		for (auto i : objects) {
 			double Ex = 0.0;
 			double Ey = 0.0;
@@ -270,8 +282,8 @@ void gravityField::computeGravity(double dt) {
 			{
 				std::lock_guard<std::mutex> lg(objectsMutex);
 				i->updateAcceleration(Ex, Ey, Ez);
-				i->updatePosition(dt*rest);
-				i->updateVelocity(dt*rest);
+				i->updatePosition(dt*restMulti);
+				i->updateVelocity(dt*restMulti);
 			}
 			{
 				std::lock_guard<std::mutex> lg(maxMutex);
@@ -293,16 +305,22 @@ void gravityField::computeGravity(double dt) {
 		}
 	{
 		std::lock_guard<std::mutex> lg(simulTimeMutex);
-		simulTime += dt*multi;
+		simulTime += dt*totalMulti;
 	}
 }
 void gravityField::multiplyMultiplier(double multi) {
 	if (multi < 0.0)
 		return;
 	std::lock_guard<std::mutex> lg(multiplierMutex);
-	timeMultiplier *= multi;
-	if (timeMultiplier > 10000.0)
-		timeMultiplier = 10000.0;
+	multi *= (static_cast<double>(intMultiplier) + restMultiplier);
+	if (multi > 10000.0) {
+		intMultiplier = 10000;
+		restMultiplier = 0.0;
+	}
+	else {
+		intMultiplier = static_cast<int>(multi);
+		restMultiplier = multi - static_cast<double>(intMultiplier);
+	}
 }
 void gravityField::printObjects(void) const {
 	std::lock_guard<std::mutex> lg(objectsMutex);
@@ -367,9 +385,12 @@ bool gravityField::searchObject(const std::string name) const {
 
 void gravityField::setTimeMultiplier(double multi) {
 	std::lock_guard<std::mutex> lg(multiplierMutex);
-	timeMultiplier = multi;
-	if (timeMultiplier < 0.0)
-		timeMultiplier = 0.0;
+	if (multi > 10000.0)
+		multi = 10000.0;
+	else if (multi < 0.0)
+		multi = 0.0;
+	intMultiplier = static_cast<int>(multi);
+	restMultiplier = multi - static_cast<double>(intMultiplier);
 }
 
 gravityField::~gravityField(void) {
