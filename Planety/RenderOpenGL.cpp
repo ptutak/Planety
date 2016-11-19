@@ -385,7 +385,6 @@ void keyboard(unsigned char key, int x, int y) {
 		break;
 	}
 	display();
-//	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 void specialKeys(int key, int x, int y)
@@ -426,7 +425,6 @@ void specialKeys(int key, int x, int y)
 		break;
 	}
 	display();
-//	reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 void mouseButton(int button, int state, int x, int y) {
@@ -447,7 +445,6 @@ void mouseButton(int button, int state, int x, int y) {
 		if (button == 4)
 			scale *= 0.95;
 		display();
-		//reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
 
@@ -460,7 +457,6 @@ void mouseMotion(int x, int y) {
 		rotatey += 0.1 * (x - mouseButtonX);
 		mouseButtonX = x;
 		display();
-		//reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
 void menu(int value)
