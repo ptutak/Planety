@@ -43,6 +43,8 @@ bool toggleDescription = true;
 bool toggleFloatingDescription = true;
 bool toggleParameters = true;
 
+int windowWidth = 0;
+int windowHeight = 0;
 
 void drawCircle(double radius)
 {
@@ -323,8 +325,10 @@ void calculateScene(void) {
 	right = maxSize+maxD;
 	left = -maxSize-maxD;
 	_near = (maxSize+maxD)*2;
-	_far = 1000 * (maxSize + maxD) + _near;
+	_far = 10000 * (maxSize + maxD) + _near;
 }
+
+
 
 void reshape(int width, int height) {
 	glViewport(0, 0, width, height);
@@ -390,8 +394,8 @@ void keyboard(unsigned char key, int x, int y) {
 void specialKeys(int key, int x, int y)
 {
 	double scaleTr = (right - left)*0.03;
-	if (scale > 1.0)
-		scaleTr *= scale;
+	if (scale < 1.0)
+		scaleTr /= scale;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
@@ -444,7 +448,7 @@ void mouseButton(int button, int state, int x, int y) {
 			scale /= .95;
 		if (button == 4)
 			scale *= 0.95;
-		display();
+		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
 
