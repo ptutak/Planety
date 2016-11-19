@@ -122,19 +122,17 @@ void initDisplayMatrixModeBackground(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
 	glTranslated(0, 0, -maxDistance * 3);
-
-
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
-
-	glTranslated(translatex*maxDistance, translatey*maxDistance, translatez*maxDistance);
+	glTranslated(translatex*maxDistance*scale, translatey*maxDistance*scale, translatez*maxDistance*scale);
 
 	drawAxis();
 
 	glPushMatrix();
-	glScaled(3 * _near / 10, 3 * _near / 10, 3 * _near / 10);
+	glScaled(3 * maxDistance / 10, 3 * maxDistance / 10, 3 * maxDistance / 10);
 	drawOrigin();
 	glPopMatrix();
 
@@ -390,7 +388,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 void specialKeys(int key, int x, int y)
 {
-	double scaleTr = (right - left)*0.03;
+	double scaleTr = (right - left)*0.03/scale;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
