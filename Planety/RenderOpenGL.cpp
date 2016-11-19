@@ -22,10 +22,11 @@ GLdouble left = -1.0;
 GLdouble right = 1.0;
 GLdouble bottom = -1.0;
 GLdouble top = 1.0;
-GLdouble _near = 1.0;
+GLdouble _near = 3.0;
 GLdouble _far = 5.0;
 
 GLdouble scale = 1.0;
+GLdouble maxDistance = 0.0;
 
 GLdouble rotatex = 0.0;
 GLdouble rotatey = 0.0;
@@ -121,14 +122,14 @@ void initDisplayMatrixModeBackground(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	glTranslated(0, 0, -maxDistance * 3);
 
-	glTranslated(0, 0, -_near * 3);
 
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
 
-	glTranslated(translatex, translatey, translatez);
+	glTranslated(translatex*maxDistance, translatey*maxDistance, translatez*maxDistance);
 
 	drawAxis();
 
@@ -320,12 +321,8 @@ void calculateScene(void) {
 		maxSize = abs(minY);
 	if (abs(minZ) > maxSize)
 		maxSize = abs(minZ);
-	top = maxSize+maxD;
-	bottom = -maxSize-maxD;
-	right = maxSize+maxD;
-	left = -maxSize-maxD;
-	_near = (maxSize+maxD)*2;
-	_far = 10000 * (maxSize + maxD) + _near;
+	maxDistance = maxSize + maxD;
+	_far = 10000 * (maxSize+ maxD) + _near;
 }
 
 
@@ -394,8 +391,6 @@ void keyboard(unsigned char key, int x, int y) {
 void specialKeys(int key, int x, int y)
 {
 	double scaleTr = (right - left)*0.03;
-	if (scale < 1.0)
-		scaleTr /= scale;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
