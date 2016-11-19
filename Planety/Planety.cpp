@@ -125,8 +125,12 @@ flyingObject* readObjectFromStream(std::istream& in) {
 				if (number != 0.0)
 					tmpRocket->setForceZ(number);
 			}
-			delete tmpObject;
-			tmpObject = dynamic_cast<flyingObject*>(tmpRocket);
+			if (tmpRocket->getForceX()*tmpRocket->getForceX() + tmpRocket->getForceY()*tmpRocket->getForceY() + tmpRocket->getForceZ()*tmpRocket->getForceZ()) {
+				delete tmpObject;
+				tmpObject = dynamic_cast<flyingObject*>(tmpRocket);
+			}
+			else
+				delete tmpRocket;
 		}
 	}
 	return tmpObject;

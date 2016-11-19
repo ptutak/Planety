@@ -39,7 +39,7 @@ CLASS FLYING OBJECT
 
 int flyingObject::oNumber = 0;
 
-std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
+std::ostream& operator<<(std::ostream& out, const flyingObject& obj) {
 	out << obj.getName() << std::endl;
 	out << "m:  " << obj.getMass() << std::endl;
 	out << "d:  " << obj.getDiameter() << std::endl;
@@ -52,6 +52,12 @@ std::ostream& operator<<(std::ostream& out, const flyingObject obj) {
 	out << "ax: " << obj.getAx() << std::endl;
 	out << "ay: " << obj.getAy() << std::endl;
 	out << "az: " << obj.getAz() << std::endl;
+	if (obj.getType() == 'r') {
+		const rocket robj = dynamic_cast<const rocket&>(obj);
+		out << "Fx: " << robj.getForceX() << std::endl;
+		out << "Fy: " << robj.getForceY() << std::endl;
+		out << "Fz: " << robj.getForceZ() << std::endl;
+	}
 	return out;
 }
 

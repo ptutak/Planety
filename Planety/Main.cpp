@@ -4,7 +4,6 @@
 int main(void)
 {
 	init();
-
 	system("pause");
 }
 	

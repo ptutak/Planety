@@ -86,6 +86,7 @@ public:
 	double getAx(void) const { return ax; }
 	double getAy(void) const { return ay; }
 	double getAz(void) const { return az; }
+	char getType(void) const { return type; }
 
 	void setName(std::string newName) { name = newName; }
 	virtual void setMass(double mass) { m = mass; }
@@ -103,7 +104,7 @@ public:
 	virtual ~flyingObject(void) {}
 };
 
-std::ostream& operator<<(std::ostream& out, const flyingObject obj);
+std::ostream& operator<<(std::ostream& out, const flyingObject& obj);
 
 /*
 

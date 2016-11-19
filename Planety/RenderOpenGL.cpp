@@ -47,12 +47,14 @@ bool toggleParameters = true;
 int windowWidth = 0;
 int windowHeight = 0;
 
+constexpr double DEG2RAD = 180.0 / 3.14159;
+
 void drawCircle(double radius)
 {
-	const double DEG2RAD = 3.14159 / 180;
+	const double RAD2DEG = 3.14159 / 180;
 	glBegin(GL_LINE_LOOP);
 	for (int i = 0; i < 360; i++) {
-		double degInRad = i*DEG2RAD;
+		double degInRad = i*RAD2DEG;
 		glVertex3d(cos(degInRad)*radius, sin(degInRad)*radius, 0.0);
 	}
 	glEnd();
@@ -176,7 +178,7 @@ void drawObjectsList(void) {
 			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
 			strm << *i;
 		}
-		drawStream(strm, leftPosition * 110, topPosition*-150, GLUT_BITMAP_HELVETICA_12, 12);
+		drawStream(strm, leftPosition * 110, topPosition*-200, GLUT_BITMAP_HELVETICA_12, 12);
 		++leftPosition;
 		if (((leftPosition + 1) * 110) > glutGet(GLUT_WINDOW_WIDTH)){
 			leftPosition = 0;
@@ -243,6 +245,8 @@ void drawObjects(void) {
 	glColor3d(0, 0, 0);
 	for (const auto i : (*field)->getObjects()) {
 		double x, y, z, d;
+		char type;
+		double Fx, Fy,Fz;
 		std::string name;
 		{
 			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
@@ -251,6 +255,13 @@ void drawObjects(void) {
 			z = i->getZ();
 			d = i->getDiameter();
 			name = i->getName();
+			type = i->getType();
+			if (type == 'r') {
+				const rocket* x = dynamic_cast<const rocket*>(i);
+				Fx = x->getForceX();
+				Fy = x->getForceY();
+				Fz = x->getForceZ();
+			}
 		}
 		d = d / 2.0;
 		glPushMatrix();
@@ -269,8 +280,17 @@ void drawObjects(void) {
 			glEnd();
 			glPopMatrix();
 		}
-		glRotated(90, 1, 0, 0);
-		glutWireSphere(d, 40, 20);
+		if (type == 'o') {
+			glRotated(90, 1, 0, 0);
+			glutWireSphere(d, 40, 20);
+		}
+		else if (type == 'r') {
+			glRotated(-DEG2RAD*acos(Fz / sqrt(Fx*Fx + Fy*Fy + Fz*Fz)), Fy, -Fx, 0);
+			glTranslated(0, 0, -2.3*d);
+			glutWireCylinder(d, d*2.5, 40, 20);
+			glTranslated(0, 0, d*2.5);
+			glutWireCone(d*1.2, d*1.7, 40, 20);
+		}
 		glPopMatrix();
 	}
 }
