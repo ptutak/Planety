@@ -435,7 +435,7 @@ void init(void) {
 			std::cout << "4 - Rozpocznij symulacje" << std::endl;
 			std::cout << "5 - Zapisz konfiguracje do pliku" << std::endl;
 			std::cout << "6 - Wczytaj konfiguracje z pliku" << std::endl;
-			std::cout << "7 - Wyczysc obiekty" << std::endl;
+			std::cout << "7 - Usun wszystkie obiekty" << std::endl;
 			std::cout << "8 - Opcje" << std::endl;
 			std::cout << "9 - Wyjdz" << std::endl;
 			choice = std::cin.peek();

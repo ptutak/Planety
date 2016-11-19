@@ -3,7 +3,8 @@
 enum
 {
 	AUTOMATIC_CAMERA, //nie zaimplementowano
-	MANUAL_CAMERA, 
+	MANUAL_CAMERA,
+	CENTER_VIEW,
 	DESCRIPTION_ON_OFF,
 	FLOATING_DESCRIPTION_ON_OFF,
 	PARAMETERS_ON_OFF,
@@ -390,6 +391,8 @@ void keyboard(unsigned char key, int x, int y) {
 void specialKeys(int key, int x, int y)
 {
 	double scaleTr = (right - left)*0.03;
+	if (scale > 1.0)
+		scaleTr *= scale;
 	switch (key) {
 	case GLUT_KEY_LEFT:
 		translatex -= scaleTr;
@@ -443,7 +446,8 @@ void mouseButton(int button, int state, int x, int y) {
 			scale /= .95;
 		if (button == 4)
 			scale *= 0.95;
-		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+		display();
+		//reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
 
@@ -455,20 +459,21 @@ void mouseMotion(int x, int y) {
 
 		rotatey += 0.1 * (x - mouseButtonX);
 		mouseButtonX = x;
-		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+		display();
+		//reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }
 void menu(int value)
 {
 	switch (value)
 	{
-	case AUTOMATIC_CAMERA:
-		aspect = AUTOMATIC_CAMERA;
-		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
-		break;
-	case MANUAL_CAMERA:
-		aspect = MANUAL_CAMERA;
-		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+	case CENTER_VIEW:
+		rotatex = 0.0;
+		rotatey = 0.0;
+		rotatez = 0.0;
+		translatex = 0.0;
+		translatey = 0.0;
+		translatez = 0.0;
 		break;
 	case DESCRIPTION_ON_OFF:
 		toggleDescription = !toggleDescription;
@@ -500,9 +505,8 @@ void initFunc(void) {
 }
 
 void initMenu(void) {
-	int menuAspect = glutCreateMenu(menu);
-	glutAddMenuEntry("Kamera manualna", MANUAL_CAMERA);
-//	glutAddMenuEntry("Kamera automatyczna", AUTOMATIC_CAMERA);
+	int menuImage = glutCreateMenu(menu);
+	glutAddMenuEntry("Centruj widok", CENTER_VIEW);
 
 	int menuDescription = glutCreateMenu(menu);
 	glutAddMenuEntry("Wlacz/Wylacz opisy", DESCRIPTION_ON_OFF);
@@ -511,7 +515,7 @@ void initMenu(void) {
 	// menu g³ówne
 
 	glutCreateMenu(menu);
-	glutAddSubMenu("Tryb kamery", menuAspect);
+	glutAddSubMenu("Obraz", menuImage);
 	glutAddSubMenu("Opisy", menuDescription);
 	glutAddMenuEntry("Wyjscie", EXIT);
 

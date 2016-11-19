@@ -10,7 +10,7 @@
 #include <sstream>
 
 // CONSTANTS
-constexpr double G = 6.6740831e-11;
+constexpr double G = 6.674083131e-11;
 
 //SIMULATION INFO
 
@@ -128,10 +128,10 @@ public:
 	double getForceY(void) const { return Fye; }
 	double getForceZ(void) const { return Fze; }
 
-	void setMass(double mass) { m = mass; recalculateEngineAcceleration(); }
-	void setForceX(double Fx) { Fxe = Fx; }
-	void setForceY(double Fy) { Fye = Fy; }
-	void setForceZ(double Fz) { Fze = Fz; }
+	void setMass(double mass) { m = mass;  std::cout << "jest rakieta" << axe; }
+	void setForceX(double Fx) { Fxe = Fx; recalculateEngineAcceleration(); }
+	void setForceY(double Fy) { Fye = Fy; recalculateEngineAcceleration(); }
+	void setForceZ(double Fz) { Fze = Fz; recalculateEngineAcceleration(); }
 
 	rocket(std::string oName, double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0, double Fx = 0.0, double Fy = 0.0, double Fz = 0.0);
 	rocket(double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0, double Fx = 0.0, double Fy = 0.0, double Fz = 0.0);
