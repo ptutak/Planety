@@ -37,6 +37,7 @@ public:
 };
 
 simulationInfo& getInfo(void);
+
 /*
 
 CLASS FLYING OBJECT
