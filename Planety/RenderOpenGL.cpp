@@ -383,13 +383,13 @@ void keyboard(unsigned char key, int x, int y) {
 	case '+':
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
-		(*field)->addMultiplier(0.5);
+		(*field)->addMultiplier(1.0);
 	}
 	break;
 	case '-':
 	{
 		std::lock_guard<std::mutex> lg(*fieldMutex);
-		(*field)->addMultiplier(-0.5);
+		(*field)->addMultiplier(-1.0);
 	}
 	break;
 	case '*':
