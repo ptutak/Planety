@@ -70,17 +70,30 @@ protected:
 	double zSpin;
 
 	void recalculateGamma(void) {
-		if (getVSq() != cSq)
-			gamma = 1.0 / sqrt(1 - getVSq() / cSq);
+		if (getVSq() < cSq)
+			gamma = 1.0 / sqrt(1.0 - getVSq() / cSq);
 		else
 			gamma = 0.0;
 	}
 public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
 	double distanceSquared(const flyingObject& obj) const { return (obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z); }
-	virtual void updateAcceleration(double Ex, double Ey, double Ez);
-	virtual void updatePosition(double dt);
-	virtual void updateVelocity(double dt);
+	virtual void updateAcceleration(double Ex, double Ey, double Ez) {
+		ax = Ex * gamma;
+		ay = Ey * gamma;
+		az = Ez * gamma;
+	}
+	virtual void updatePosition(double dt) {
+		x = x + vx*dt + ax*dt*dt / 2;
+		y = y + vy*dt + ay*dt*dt / 2;
+		z = z + vz*dt + az*dt*dt / 2;
+	}
+	virtual void updateVelocity(double dt) {
+		vx += dt*ax;
+		vy += dt*ay;
+		vz += dt*az;
+		recalculateGamma();
+	}
 	virtual std::string shortDescription(int precision = -1) const;
 
 	std::string getName(void) const { return name; }
@@ -145,7 +158,11 @@ protected:
 	}
 public:
 	std::string shortDescription(int precision = -1) const;
-	void updateAcceleration(double Ex, double Ey, double Ez);
+	void updateAcceleration(double Ex, double Ey, double Ez) {
+		ax = Ex * gamma + axe;
+		ay = Ey * gamma + aye;
+		az = Ez * gamma + aze;
+	}
 
 	double getForceX(void) const { return Fxe; }
 	double getForceY(void) const { return Fye; }

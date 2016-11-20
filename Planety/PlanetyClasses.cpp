@@ -77,28 +77,17 @@ std::string flyingObject::shortDescription(int prec) const {
 	strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString;
 	return retString;
 }
-void flyingObject::updateAcceleration(double Ex, double Ey, double Ez) {
-	ax = Ex * gamma;
-	ay = Ey * gamma;
-	az = Ez * gamma;
-}
-void flyingObject::updatePosition(double dt) {
-	x = x + vx*dt + ax*dt*dt / 2;
-	y = y + vy*dt + ay*dt*dt / 2;
-	z = z + vz*dt + az*dt*dt / 2;
-}
-void flyingObject::updateVelocity(double dt) {
-	vx += dt*ax;
-	vy += dt*ay;
-	vz += dt*az;
-	recalculateGamma();
-}
 flyingObject::flyingObject(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
 	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
 	oNumber++;
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
+	if (getVSq() > cSq) {
+		vx = vx*c / getV();
+		vy = vy*c / getV();
+		vz = vz*c / getV();
+	}
 	recalculateGamma();
 }
 flyingObject::flyingObject(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
@@ -108,6 +97,11 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
+	if (getVSq() > cSq) {
+		vx = vx*c / getV();
+		vy = vy*c / getV();
+		vz = vz*c / getV();
+	}
 	recalculateGamma();
 }
 
@@ -129,11 +123,6 @@ std::string rocket::shortDescription(int prec) const {
 	return retString;
 }
 
-void rocket::updateAcceleration(double Ex, double Ey, double Ez) {
-	ax = Ex * gamma + axe;
-	ay = Ey * gamma + aye;
-	az = Ez * gamma + aze;
-}
 rocket::rocket(const flyingObject& obj, double Fx, double Fy, double Fz) :
 	flyingObject{ obj }, Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
 	type = 'r';
