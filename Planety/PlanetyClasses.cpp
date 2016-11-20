@@ -83,11 +83,7 @@ flyingObject::flyingObject(std::string oName, double mass, double diameter, doub
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
-	if (getVSq() > cSq) {
-		vx = vx*c / getV();
-		vy = vy*c / getV();
-		vz = vz*c / getV();
-	}
+	recalculateVelocity();
 	recalculateGamma();
 }
 flyingObject::flyingObject(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
@@ -97,11 +93,7 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
-	if (getVSq() > cSq) {
-		vx = vx*c / getV();
-		vy = vy*c / getV();
-		vz = vz*c / getV();
-	}
+	recalculateVelocity();
 	recalculateGamma();
 }
 

@@ -54,7 +54,6 @@ protected:
 	char type;
 	std::string name;
 	double m;
-	double gamma;
 	double d;
 	double x;
 	double y;
@@ -68,20 +67,28 @@ protected:
 	double xSpin;
 	double ySpin;
 	double zSpin;
+	double recipGamma;
 
-	void recalculateGamma(void) {
-		if (getVSq() < cSq)
-			gamma = 1.0 / sqrt(1.0 - getVSq() / cSq);
-		else
-			gamma = 0.0;
-	}
+
+
 public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
 	double distanceSquared(const flyingObject& obj) const { return (obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z); }
+	void recalculateGamma(void) {
+		recipGamma = sqrt(1.0 - getVSq() / cSq);
+	}
+	void recalculateVelocity(void) {
+		double v = getV();
+		if (getVSq() > cSq) {
+			vx = vx*c / v;
+			vy = vy*c / v;
+			vz = vz*c / v;
+		}
+	}
 	virtual void updateAcceleration(double Ex, double Ey, double Ez) {
-		ax = Ex * gamma;
-		ay = Ey * gamma;
-		az = Ez * gamma;
+		ax = Ex * recipGamma;
+		ay = Ey * recipGamma;
+		az = Ez * recipGamma;
 	}
 	virtual void updatePosition(double dt) {
 		x = x + vx*dt + ax*dt*dt / 2;
@@ -157,11 +164,12 @@ protected:
 		}
 	}
 public:
+
 	std::string shortDescription(int precision = -1) const;
 	void updateAcceleration(double Ex, double Ey, double Ez) {
-		ax = Ex * gamma + axe;
-		ay = Ey * gamma + aye;
-		az = Ez * gamma + aze;
+		ax = (Ex + axe)*recipGamma;
+		ay = (Ey + aye)*recipGamma;
+		az = (Ez + aze)*recipGamma;
 	}
 
 	double getForceX(void) const { return Fxe; }

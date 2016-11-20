@@ -78,7 +78,10 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			std::stringstream data(line);
 			data >> number;
 			if (number != 0.0)
-				tmpObject->setVx(number);
+				if (data.get()=='c')
+					tmpObject->setVx(number*c);
+				else
+					tmpObject->setVx(number);
 		}
 		if (!linestrm.eof()) {
 			std::string line;
@@ -87,7 +90,10 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			std::stringstream data(line);
 			data >> number;
 			if (number != 0.0)
-				tmpObject->setVy(number);
+				if (data.get() == 'c')
+					tmpObject->setVy(number*c);
+				else
+					tmpObject->setVy(number);
 		}
 		if (!linestrm.eof()) {
 			std::string line;
@@ -96,8 +102,13 @@ flyingObject* readObjectFromStream(std::istream& in) {
 			std::stringstream data(line);
 			data >> number;
 			if (number != 0.0)
-				tmpObject->setVz(number);
+				if (data.get() == 'c')
+					tmpObject->setVz(number*c);
+				else
+					tmpObject->setVz(number);
 		}
+		tmpObject->recalculateVelocity();
+		tmpObject->recalculateGamma();
 		if (!linestrm.eof()) {
 			std::string line;
 			rocket* tmpRocket = new rocket{ *tmpObject };
