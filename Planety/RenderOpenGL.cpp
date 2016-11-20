@@ -485,7 +485,6 @@ void mouseMotion(int x, int y) {
 	{
 		rotatex += 0.1 * (y - mouseButtonY);
 		mouseButtonY = y;
-
 		rotatey += 0.1 * (x - mouseButtonX);
 		mouseButtonX = x;
 		display();

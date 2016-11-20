@@ -18,7 +18,6 @@ limitations under the License.
 int main(void)
 {
 	initPlanety();
-
 	system("pause");
 }
 	
