@@ -171,6 +171,7 @@ void drawString(std::string s, int x, int y, void * font) {
 		glutBitmapCharacter(font, s[i]);
 	glPopMatrix();
 }
+
 void drawStream(std::istream& str, int x, int y, void* font, int fontSize) {
 	int line = 0;
 	while (!str.eof()) {
@@ -180,6 +181,7 @@ void drawStream(std::istream& str, int x, int y, void* font, int fontSize) {
 		line++;
 	}
 }
+
 void drawObjectsList(void) {
 	int leftPosition = 0;
 	int topPosition = 0;
@@ -237,7 +239,6 @@ void drawParameters(void) {
 		multiplier=(*field)->getTimeMultiplier();
 		simulTime = (*field)->getSimulTime();
 	}
-
 	std::stringstream tmp;
 	tmp << constFrame;
 	drawString("Stala ramka czasu:" + tmp.str() + "ms", 15, -glutGet(GLUT_WINDOW_HEIGHT) + 87, GLUT_BITMAP_HELVETICA_18);
@@ -252,6 +253,7 @@ void drawParameters(void) {
 	drawString("Czas symulacji:" + reformatSec(simulTime), 15, -glutGet(GLUT_WINDOW_HEIGHT) + 33, GLUT_BITMAP_HELVETICA_18);
 	drawString("Czas rzeczywisty:" + reformatSec(realTime), 15, -glutGet(GLUT_WINDOW_HEIGHT) + 15, GLUT_BITMAP_HELVETICA_18);
 }
+
 void drawObjects(void) {
 	std::lock_guard<std::mutex> lg(*fieldMutex);
 	glColor3d(0, 0, 0);
@@ -306,6 +308,7 @@ void drawObjects(void) {
 		glPopMatrix();
 	}
 }
+
 void display(void) {
 	glClearColor(1.0, 1.0, 0.94, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -358,8 +361,6 @@ void calculateScene(void) {
 	maxDistance = maxDist + maxD;
 	_far = 10000 * (maxDist+ maxD) + _near;
 }
-
-
 
 void reshape(int width, int height) {
 	glViewport(0, 0, width, height);
@@ -490,6 +491,7 @@ void mouseMotion(int x, int y) {
 		display();
 	}
 }
+
 void menu(int value)
 {
 	switch (value)

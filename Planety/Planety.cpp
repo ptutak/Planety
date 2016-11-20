@@ -236,8 +236,7 @@ void modifyObjectMenu(gravityField* gravField) {
 		gravField->addObject(tmpObject);
 		std::cout << "Zrobione" << std::endl;
 	}
-	else
-	{
+	else {
 		std::cout << "Bledna nazwa obiektu" << std::endl;
 	}
 }
@@ -258,7 +257,6 @@ void startSimulationMenu(gravityField* gravField) {
 	std::cout << "NACISNIJ I PRZYTRZYMAJ LEWY PRZYCISK MYSZY - by zaczac obracac obiektami" << std::endl;
 	std::cout << "PRAWY PRZYCISK MYSZY - menu podreczne" << std::endl;
 	system("pause");
-
 	clock_t start_clock;
 	clock_t dif = FRAME_SIZE;
 	getInfo().setConstFrame(FRAME_SIZE);
@@ -339,11 +337,9 @@ void readFromFileMenu(gravityField* gravField) {
 		}
 		file.close();
 	}
-	else
-	{
+	else {
 		std::cout << "Niepoprawna nazwa pliku" << std::endl;
 	}
-
 }
 
 void deleteAllObjectsMenu(gravityField*& gravField) {
@@ -459,6 +455,7 @@ void optionsMenu(gravityField* gravField) {
 		break;
 	}
 }
+
 /*
 
 INIT
@@ -525,5 +522,4 @@ void initPlanety(void) {
 			return;
 		}
 	} while (1);
-
 }
