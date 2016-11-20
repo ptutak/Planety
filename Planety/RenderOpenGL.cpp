@@ -427,16 +427,16 @@ void specialKeys(int key, int x, int y) {
 	double scaleTr = (right - left)*0.03/scale;
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		translatex -= scaleTr;
-		break;
-	case GLUT_KEY_RIGHT:
 		translatex += scaleTr;
 		break;
+	case GLUT_KEY_RIGHT:
+		translatex -= scaleTr;
+		break;
 	case GLUT_KEY_UP:
-		translatey += scaleTr;
+		translatey -= scaleTr;
 		break;
 	case GLUT_KEY_DOWN:
-		translatey -= scaleTr;
+		translatey += scaleTr;
 		break;
 	case GLUT_KEY_PAGE_UP:
 		translatez += scaleTr;
