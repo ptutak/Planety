@@ -119,16 +119,13 @@ void drawOrigin(void) {
 	glLineWidth(1.0);
 }
 
-void initDisplayMatrixModeBackground(void) {
-	glClearColor(1.0, 1.0, 0.94, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
+void translateDrawAxisOrigin(void) {
 	glTranslated(0, 0, -maxDistance * 3);
+	
 	glRotated(rotatex, 1.0, 0.0, 0.0);
 	glRotated(rotatey, 0.0, 1.0, 0.0);
 	glRotated(rotatez, 0.0, 0.0, 1.0);
+
 	glTranslated(translatex*maxDistance*scale, translatey*maxDistance*scale, translatez*maxDistance*scale);
 
 	drawAxis();
@@ -295,7 +292,11 @@ void drawObjects(void) {
 	}
 }
 void display(void) {
-	initDisplayMatrixModeBackground();
+	glClearColor(1.0, 1.0, 0.94, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	translateDrawAxisOrigin();
 	glColor3d(0.0, 0.0, 0.0);
 	if (toggleDescription)
 		drawObjectsList();
@@ -328,19 +329,19 @@ void calculateScene(void) {
 		minZ = (*field)->getMinZ();
 		maxD = (*field)->getMaxD();
 	}
-	double maxSize = abs(maxX);
-	if (abs(maxY) > maxSize)
-		maxSize = abs(maxY);
-	if (abs(maxZ) > maxSize)
-		maxSize = abs(maxZ);
-	if (abs(minX) > maxSize)
-		maxSize = abs(minX);
-	if (abs(minY) > maxSize)
-		maxSize = abs(minY);
-	if (abs(minZ) > maxSize)
-		maxSize = abs(minZ);
-	maxDistance = maxSize + maxD;
-	_far = 10000 * (maxSize+ maxD) + _near;
+	double maxDist = abs(maxX);
+	if (abs(maxY) > maxDist)
+		maxDist = abs(maxY);
+	if (abs(maxZ) > maxDist)
+		maxDist = abs(maxZ);
+	if (abs(minX) > maxDist)
+		maxDist = abs(minX);
+	if (abs(minY) > maxDist)
+		maxDist = abs(minY);
+	if (abs(minZ) > maxDist)
+		maxDist = abs(minZ);
+	maxDistance = maxDist + maxD;
+	_far = 10000 * (maxDist+ maxD) + _near;
 }
 
 
