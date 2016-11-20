@@ -474,9 +474,9 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) 
 			return;
 		if (button == 3)
-			scale /= .95;
+			scale /= .9;
 		if (button == 4)
-			scale *= 0.95;
+			scale *= 0.9;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }

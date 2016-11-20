@@ -159,8 +159,8 @@ void gravityField::addMultiplier(double add) {
 	multi += add;
 	if (multi < 0.0)
 		multi = 0.0;
-	if (multi > 10000.0)
-		multi = 10000.0;
+	if (multi > MAX_MULTIPLIER)
+		multi = MAX_MULTIPLIER;
 	intMultiplier = static_cast<int>(multi);
 	restMultiplier = multi - static_cast<double>(intMultiplier);
 }
@@ -297,8 +297,8 @@ void gravityField::multiplyMultiplier(double multi) {
 		return;
 	std::lock_guard<std::mutex> lg(multiplierMutex);
 	multi *= (static_cast<double>(intMultiplier) + restMultiplier);
-	if (multi > 10000.0) {
-		intMultiplier = 10000;
+	if (multi > MAX_MULTIPLIER) {
+		intMultiplier = static_cast<int>(MAX_MULTIPLIER);
 		restMultiplier = 0.0;
 	}
 	else {
@@ -369,8 +369,8 @@ bool gravityField::searchObject(const std::string name) const {
 
 void gravityField::setTimeMultiplier(double multi) {
 	std::lock_guard<std::mutex> lg(multiplierMutex);
-	if (multi > 10000.0)
-		multi = 10000.0;
+	if (multi > MAX_MULTIPLIER)
+		multi = MAX_MULTIPLIER;
 	else if (multi < 0.0)
 		multi = 0.0;
 	intMultiplier = static_cast<int>(multi);

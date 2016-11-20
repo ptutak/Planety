@@ -366,24 +366,18 @@ void computeTimeMenu(gravityField* gravField) {
 	std::cout << "Podaj wielkosc ramki w ms:" << std::endl;
 	int frame;
 	std::cin >> frame;
-	double currentTime = 0.0;
+	long long currentTime = 0;
 	double newFrame = frame / static_cast<double>(1000);
-	double intTime = 0.0;
+	long long intTime = 0;
 	double restTime = 0.0;
-	if (time / newFrame > 10000.0){
-		gravField->setTimeMultiplier(10000.0);
-		intTime = trunc(time / 10000.0);
-		restTime = time - intTime*10000.0;
-	}
-	else {
-		gravField->setTimeMultiplier(1.0);
-		intTime = time;
-	}
+	gravField->setTimeMultiplier(MAX_MULTIPLIER);
+	intTime = static_cast<long long>((time/newFrame) / MAX_MULTIPLIER);
+	restTime = time - static_cast<double>(intTime)*MAX_MULTIPLIER*newFrame;
 	while (currentTime < intTime) {
 		gravField->computeGravity(newFrame);
-		currentTime += newFrame;
+		currentTime++;
 	}
-	gravField->setTimeMultiplier(restTime);
+	gravField->setTimeMultiplier(restTime/newFrame);
 	gravField->computeGravity(newFrame);
 	gravField->printObjects();
 	std::string tmp;
