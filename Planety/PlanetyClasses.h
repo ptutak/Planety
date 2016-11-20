@@ -11,7 +11,8 @@
 
 // CONSTANTS
 constexpr double G = 6.674083131e-11;
-
+constexpr double c = 299792458.0;
+constexpr double cSq = 89875517873681764.0;
 //SIMULATION INFO
 
 class simulationInfo {
@@ -53,6 +54,7 @@ protected:
 	char type;
 	std::string name;
 	double m;
+	double gamma;
 	double d;
 	double x;
 	double y;
@@ -66,6 +68,13 @@ protected:
 	double xSpin;
 	double ySpin;
 	double zSpin;
+
+	void recalculateGamma(void) {
+		if (getVSq() != cSq)
+			gamma = 1.0 / sqrt(1 - getVSq() / cSq);
+		else
+			gamma = 0.0;
+	}
 public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
 	double distanceSquared(const flyingObject& obj) const { return (obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z); }
@@ -87,6 +96,8 @@ public:
 	double getAy(void) const { return ay; }
 	double getAz(void) const { return az; }
 	char getType(void) const { return type; }
+	double getVSq(void) const { return (vx*vx + vy*vy + vz*vz); }
+	double getV(void) const { return sqrt(vx*vx + vy*vy + vz*vz); }
 
 	void setName(std::string newName) { name = newName; }
 	virtual void setMass(double mass) { m = mass; }
@@ -97,7 +108,6 @@ public:
 	void setVx(double Vx) { vx = Vx; }
 	void setVy(double Vy) { vy = Vy; }
 	void setVz(double Vz) { vx = Vz; }
-
 
 	flyingObject(std::string oName, double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);
 	flyingObject(double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);
@@ -114,15 +124,26 @@ CLASS ROCKET
 
 class rocket :public flyingObject
 {
-private:
+protected:
 	double Fxe;
 	double Fye;
 	double Fze;
 	double axe;
 	double aye;
 	double aze;
+	void recalculateEngineAcceleration(void) {
+		if (m != 0.0) {
+			axe = Fxe / m;
+			aye = Fye / m;
+			aze = Fze / m;
+		}
+		else {
+			axe = 0.0;
+			aye = 0.0;
+			aze = 0.0;
+		}
+	}
 public:
-	void recalculateEngineAcceleration(void);
 	std::string shortDescription(int precision = -1) const;
 	void updateAcceleration(double Ex, double Ey, double Ez);
 

@@ -11,4 +11,4 @@
 
 
 //INIT
-void init(void);
+void initPlanety(void);

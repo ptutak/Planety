@@ -1,3 +1,11 @@
+#Dodaj obiekty w formacie:
+#[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]...]
+#gdzie [] oznacza opcję
+#np. Ziemia,5.9722e+24,6000000,0,0,0,0,0,0
+#lub InnyObiekt,1,,,60000
+#Kolejne dane oddzielaj przecinkami
+
+
 Ziemia,5.9722e+24,6000000,0,0,0,0,0,0
 Satelita1,1,500000,6378140,0,0,0,7910,0
 RakietaX,1,500000,12378140,0,0,0,0,0,100,0,0

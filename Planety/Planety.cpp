@@ -19,7 +19,7 @@ flyingObject* readObjectFromStream(std::istream& in) {
 	flyingObject* tmpObject = nullptr;
 	std::string line;
 	std::getline(in, line);
-	if (line != "") {
+	if (line != "" && line[0]!='#') {
 		tmpObject = new flyingObject;
 		std::stringstream linestrm(line);
 		line = "";
@@ -146,6 +146,7 @@ void addObjectMenu(gravityField* gravField) {
 	std::cout << std::endl;
 	std::cout << "Podaj dane obiektu w formacie:" << std::endl;
 	std::cout << "[Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]...]" << std::endl;
+	std::cout << "np.: Ziemia,5.9722e+24,6000000,0,0,0,0,0,0" << std::endl;
 	flyingObject* made = readObjectFromStream(std::cin);
 	if (made) {
 		try {
@@ -197,6 +198,7 @@ void modifyObjectMenu(gravityField* gravField) {
 		return;
 	if (gravField->searchObject(name)) {
 		std::cout << "Podaj nowe dane dla obiektu " + name + " w formacie: [Nazwa][,Masa[,Srednica[,x[,y[,z[,Vx[,Vy[,Vz[,Fx[,Fy[,Fz]]...]" << std::endl;
+		std::cout << "np.: Ziemia, 5.9722e+24, 6000000, 0, 0, 0, 0, 0, 0" << std::endl;
 		flyingObject* tmpObject = readObjectFromStream(std::cin);
 		if (gravField->searchObject(tmpObject->getName())&&(tmpObject->getName()!=name))
 		{
@@ -424,7 +426,7 @@ INIT
 
 */
 
-void init(void) {
+void initPlanety(void) {
 	gravityField* gravField = new gravityField;
 	char choice;
 	std::string tmp;

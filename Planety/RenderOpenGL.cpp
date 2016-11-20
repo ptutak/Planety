@@ -178,9 +178,9 @@ void drawObjectsList(void) {
 			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
 			strm << *i;
 		}
-		drawStream(strm, leftPosition * 110, topPosition*-200, GLUT_BITMAP_HELVETICA_12, 12);
+		drawStream(strm, leftPosition * 140, topPosition*-200, GLUT_BITMAP_HELVETICA_12, 12);
 		++leftPosition;
-		if (((leftPosition + 1) * 110) > glutGet(GLUT_WINDOW_WIDTH)){
+		if (((leftPosition + 1) * 140) > glutGet(GLUT_WINDOW_WIDTH)){
 			leftPosition = 0;
 			topPosition++;
 		}

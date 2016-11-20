@@ -41,22 +41,22 @@ int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject& obj) {
 	out << obj.getName() << std::endl;
-	out << "m:  " << obj.getMass() << std::endl;
-	out << "d:  " << obj.getDiameter() << std::endl;
-	out << "x:  " << obj.getX() << std::endl;
-	out << "y:  " << obj.getY() << std::endl;
-	out << "z:  " << obj.getZ() << std::endl;
-	out << "Vx: " << obj.getVx() << std::endl;
-	out << "Vy: " << obj.getVy() << std::endl;
-	out << "Vz: " << obj.getVz() << std::endl;
-	out << "ax: " << obj.getAx() << std::endl;
-	out << "ay: " << obj.getAy() << std::endl;
-	out << "az: " << obj.getAz() << std::endl;
+	out << "m:  " << obj.getMass() << " kg"<<std::endl;
+	out << "d:  " << obj.getDiameter() << " m"<<std::endl;
+	out << "x:  " << obj.getX() << " m"<<std::endl;
+	out << "y:  " << obj.getY() << " m" << std::endl;
+	out << "z:  " << obj.getZ() << " m" << std::endl;
+	out << "Vx: " << obj.getVx() << " m/s" << std::endl;
+	out << "Vy: " << obj.getVy() << " m/s" << std::endl;
+	out << "Vz: " << obj.getVz() << " m/s" << std::endl;
+	out << "ax: " << obj.getAx() << " m/s^2" << std::endl;
+	out << "ay: " << obj.getAy() << " m/s^2" << std::endl;
+	out << "az: " << obj.getAz() << " m/s^2" << std::endl;
 	if (obj.getType() == 'r') {
 		const rocket robj = dynamic_cast<const rocket&>(obj);
-		out << "Fx: " << robj.getForceX() << std::endl;
-		out << "Fy: " << robj.getForceY() << std::endl;
-		out << "Fz: " << robj.getForceZ() << std::endl;
+		out << "Fx: " << robj.getForceX() << " N" << std::endl;
+		out << "Fy: " << robj.getForceY() << " N" << std::endl;
+		out << "Fz: " << robj.getForceZ() << " N" << std::endl;
 	}
 	return out;
 }
@@ -78,9 +78,9 @@ std::string flyingObject::shortDescription(int prec) const {
 	return retString;
 }
 void flyingObject::updateAcceleration(double Ex, double Ey, double Ez) {
-	ax = Ex;
-	ay = Ey;
-	az = Ez;
+	ax = Ex * gamma;
+	ay = Ey * gamma;
+	az = Ez * gamma;
 }
 void flyingObject::updatePosition(double dt) {
 	x = x + vx*dt + ax*dt*dt / 2;
@@ -91,6 +91,7 @@ void flyingObject::updateVelocity(double dt) {
 	vx += dt*ax;
 	vy += dt*ay;
 	vz += dt*az;
+	recalculateGamma();
 }
 flyingObject::flyingObject(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
 	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
@@ -98,6 +99,7 @@ flyingObject::flyingObject(std::string oName, double mass, double diameter, doub
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
+	recalculateGamma();
 }
 flyingObject::flyingObject(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
 	m{ mass }, type{ 'o' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
@@ -106,6 +108,7 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
+	recalculateGamma();
 }
 
 /*
@@ -114,33 +117,12 @@ CLASS ROCKET
 
 */
 
-void rocket::recalculateEngineAcceleration(void) {
-	if (m != 0.0) {
-		axe = Fxe / m;
-		aye = Fye / m;
-		aze = Fze / m;
-	}
-	else {
-		axe = 0.0;
-		aye = 0.0;
-		aze = 0.0;
-	}
-}
-
 std::string rocket::shortDescription(int prec) const {
 	std::string retString, tempString;
 	std::stringstream strm;
-	retString = name;
+	retString = flyingObject::shortDescription(prec);
 	if (prec >= 0)
 		strm << std::setprecision(prec);
-	strm.str(""); strm << m; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << d; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << x; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << y; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << z; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString;
-	strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << Fxe; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << Fye; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << Fze; tempString = strm.str(); retString += ',' + tempString;
@@ -148,9 +130,9 @@ std::string rocket::shortDescription(int prec) const {
 }
 
 void rocket::updateAcceleration(double Ex, double Ey, double Ez) {
-	ax = Ex + axe;
-	ay = Ey + aye;
-	az = Ez + aze;
+	ax = Ex * gamma + axe;
+	ay = Ey * gamma + aye;
+	az = Ez * gamma + aze;
 }
 rocket::rocket(const flyingObject& obj, double Fx, double Fy, double Fz) :
 	flyingObject{ obj }, Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
