@@ -383,7 +383,6 @@ void computeTimeMenu(gravityField* gravField) {
 		gravField->setTimeMultiplier(1.0);
 		intTime = time;
 	}
-		
 	while (currentTime < intTime) {
 		gravField->computeGravity(newFrame);
 		currentTime += newFrame;

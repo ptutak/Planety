@@ -84,8 +84,6 @@ protected:
 	double zSpin;
 	double recipGamma;
 
-
-
 public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
 	double distanceSquared(const flyingObject& obj) const { return (obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z); }
@@ -179,7 +177,6 @@ protected:
 		}
 	}
 public:
-
 	std::string shortDescription(int precision = -1) const;
 	void updateAcceleration(double Ex, double Ey, double Ez) {
 		ax = (Ex + axe)*recipGamma;
