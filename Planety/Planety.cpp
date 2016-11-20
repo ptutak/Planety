@@ -262,6 +262,7 @@ void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = FRAME_SIZE;
 	getInfo().setConstFrame(FRAME_SIZE);
+	gravField->setTimeMultiplier(0.0);
 	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
 	std::thread renderingThread;
 	try {
@@ -371,11 +372,24 @@ void computeTimeMenu(gravityField* gravField) {
 	std::cin >> frame;
 	double currentTime = 0.0;
 	double newFrame = frame / static_cast<double>(1000);
-	gravField->setTimeMultiplier(1.0);
-	while (currentTime < time) {
+	double intTime = 0.0;
+	double restTime = 0.0;
+	if (time / newFrame > 10000.0){
+		gravField->setTimeMultiplier(10000.0);
+		intTime = trunc(time / 10000.0);
+		restTime = time - intTime*10000.0;
+	}
+	else {
+		gravField->setTimeMultiplier(1.0);
+		intTime = time;
+	}
+		
+	while (currentTime < intTime) {
 		gravField->computeGravity(newFrame);
 		currentTime += newFrame;
 	}
+	gravField->setTimeMultiplier(restTime);
+	gravField->computeGravity(newFrame);
 	gravField->printObjects();
 	std::string tmp;
 	std::getline(std::cin, tmp);
