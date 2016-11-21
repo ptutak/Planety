@@ -430,7 +430,7 @@ void optionsMenu(gravityField* gravField) {
 		std::cout << std::endl;
 		std::cout << "0 - Przesun obiekty w czasie" << std::endl;
 		std::cout << "1 - Zmien stala ramki czasu" << std::endl;
-		std::cout << "2 - zresetuj czas symulacji" << std::endl;
+		std::cout << "2 - Zresetuj czas symulacji" << std::endl;
 		std::cout << "9 - Wyjdz" << std::endl;
 		choice = std::cin.peek();
 		std::getline(std::cin, tmp);
