@@ -20,10 +20,11 @@ std::mutex fieldMutex;
 
 //CONSTANTS
 namespace constants {
-	int FRAME = 10;
+	int FRAME_SIZE = 10;
+	double INITIAL_MULTIPLIER = 0.0;
 }
-const int& FRAME_SIZE = constants::FRAME;
-
+const int& FRAME_SIZE = constants::FRAME_SIZE;
+const double& INITIAL_MULTIPLIER = constants::INITIAL_MULTIPLIER;
 /*
 
 INPUT/OUTPUT FUNCTIONS
@@ -260,7 +261,7 @@ void startSimulationMenu(gravityField* gravField) {
 	clock_t start_clock;
 	clock_t dif = FRAME_SIZE;
 	getInfo().setConstFrame(FRAME_SIZE);
-	gravField->setTimeMultiplier(0.0);
+	gravField->setTimeMultiplier(INITIAL_MULTIPLIER);
 	double frSiz = static_cast<double>(FRAME_SIZE) / static_cast<double>(CLOCKS_PER_SEC);
 	std::thread renderingThread;
 	try {
@@ -442,6 +443,18 @@ void resetSimulTimeMenu(gravityField* gravField) {
 	std::cout << "Nie resetuje" << std::endl;
 }
 
+void setInitialMultiplier(void) {
+	std::cout << "Podaj poczatkowy mnoznik czasu (aktualnie " <<INITIAL_MULTIPLIER<<")"<< std::endl;
+	std::string tmp;
+	std::getline(std::cin, tmp);
+	double multi=0.0;
+	std::stringstream strm(tmp);
+	strm >> multi;
+	if (multi >0.0)
+		const_cast<double&>(INITIAL_MULTIPLIER) = multi;
+	std::cout << "OK - nowy poczatkowy mnoznik to: " << INITIAL_MULTIPLIER << std::endl;
+}
+
 void optionsMenu(gravityField* gravField) {
 	char choice;
 	std::string tmp;
@@ -450,10 +463,11 @@ void optionsMenu(gravityField* gravField) {
 		std::cout << "0 - Przesun obiekty w czasie" << std::endl;
 		std::cout << "1 - Zmien stala ramki czasu" << std::endl;
 		std::cout << "2 - Zresetuj czas symulacji" << std::endl;
+		std::cout << "3 - Ustaw mnoznik poczatkowy" << std::endl;
 		std::cout << "9 - Wyjdz" << std::endl;
 		choice = std::cin.peek();
 		std::getline(std::cin, tmp);
-	} while (choice < '0' || choice > '2' && choice!='9');
+	} while (choice < '0' || choice > '3' && choice!='9');
 	switch (choice) {
 	case '0':
 		computeTimeMenu(gravField);
@@ -463,6 +477,9 @@ void optionsMenu(gravityField* gravField) {
 		break;
 	case '2':
 		resetSimulTimeMenu(gravField);
+		break;
+	case '3':
+		setInitialMultiplier();
 		break;
 	case '9':
 		break;

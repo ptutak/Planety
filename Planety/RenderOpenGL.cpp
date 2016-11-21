@@ -260,7 +260,9 @@ void drawObjects(void) {
 	for (const auto i : (*field)->getObjects()) {
 		double x, y, z, d;
 		char type;
-		double Fx, Fy,Fz;
+		double Fx, Fy, Fz;
+	//	double Vx, Vy, Vz, V;
+	//	double recipGamma;
 		std::string name;
 		{
 			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
@@ -270,6 +272,11 @@ void drawObjects(void) {
 			d = i->getDiameter();
 			name = i->getName();
 			type = i->getType();
+	//		Vx = i->getVx();
+	//		Vy = i->getVy();
+	//		Vz = i->getVz();
+	//		recipGamma = i->getRecipGamma();
+	//		V = i->getV();
 			if (type == 'r') {
 				const rocket* x = dynamic_cast<const rocket*>(i);
 				Fx = x->getForceX();
@@ -299,12 +306,14 @@ void drawObjects(void) {
 			glutWireSphere(d, 40, 20);
 		}
 		else if (type == 'r') {
-			glRotated(-DEG2RAD*acos(Fz / sqrt(Fx*Fx + Fy*Fy + Fz*Fz)), Fy, -Fx, 0);
+			glRotated(-DEG2RAD*acos(Fz / sqrt(Fx*Fx + Fy*Fy + Fz*Fz)), Fy, -Fx, 0.0);
 			glTranslated(0, 0, -2.3*d);
 			glutWireCylinder(d, d*2.5, 40, 20);
 			glTranslated(0, 0, d*2.5);
 			glutWireCone(d*1.2, d*1.7, 40, 20);
 		}
+	//	glRotated(-DEG2RAD*acos(Vz / V), Vy, -Vx, 0.0);
+	//	glScaled(1.0, 1.0, recipGamma);
 		glPopMatrix();
 	}
 }

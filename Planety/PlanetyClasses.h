@@ -133,6 +133,7 @@ public:
 	char getType(void) const { return type; }
 	double getVSq(void) const { return (vx*vx + vy*vy + vz*vz); }
 	double getV(void) const { return sqrt(vx*vx + vy*vy + vz*vz); }
+	double getRecipGamma(void) const { return recipGamma; }
 
 	void setName(std::string newName) { name = newName; }
 	virtual void setMass(double mass) { m = mass; }
