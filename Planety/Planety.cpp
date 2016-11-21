@@ -300,10 +300,29 @@ void saveToFileMenu(const gravityField* gravField) {
 	std::cout << std::endl;
 	std::cout << "Podaj nazwe pliku" << std::endl;
 	std::getline(std::cin, filename);
+	std::ifstream check(filename, std::ifstream::in);
+	if (check.good()) {
+		check.close();
+		std::cout << "Plik \"" << filename << "\" juz istnieje, czy nadpisac? [tT/cokolwiek]" << std::endl;
+		char choice;
+		choice = std::cin.get();
+		std::string tmp;
+		std::getline(std::cin, tmp);
+		if ((choice != 't') && (choice != 'T')) {
+			std::cout << "Ok - nie zapisuje";
+			return;
+		}
+	}
 	std::ofstream file;
-	file.open(filename, std::fstream::out|std::fstream::trunc);
+	file.open(filename, std::fstream::out | std::fstream::trunc);
 	if (file.good()) {
-		gravField->printObjectsList(file,11);
+		std::cout << "Podaj precyzje (domyslnie 10)" << std::endl;
+		std::string prec;
+		int precNumber = 11;
+		std::getline(std::cin, prec);
+		std::stringstream strm(prec);
+		strm >> precNumber;
+		gravField->printObjectsList(file,precNumber);
 		file.close();
 	}
 	else {
