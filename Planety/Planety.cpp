@@ -316,7 +316,7 @@ void saveToFileMenu(const gravityField* gravField) {
 	std::ofstream file;
 	file.open(filename, std::fstream::out | std::fstream::trunc);
 	if (file.good()) {
-		std::cout << "Podaj precyzje (domyslnie 10)" << std::endl;
+		std::cout << "Podaj precyzje (domyslnie 11)" << std::endl;
 		std::string prec;
 		int precNumber = 11;
 		std::getline(std::cin, prec);
