@@ -28,7 +28,7 @@ limitations under the License.
 constexpr double G = 6.674083131e-11;
 constexpr double c = 299792458.0;
 constexpr double cSq = 89875517873681764.0;
-constexpr double MAX_MULTIPLIER = 50000.0;
+constexpr double MAX_MULTIPLIER = 100000.0;
 
 //SIMULATION INFO
 
