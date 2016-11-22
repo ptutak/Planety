@@ -147,7 +147,7 @@ flyingObject* readObjectFromStream(std::istream& in) {
 				std::string line;
 				std::getline(linestrm, line, ',');
 				double number = 0.0;
-				std::stringstream data;
+				std::stringstream data(line);
 				data >> number;
 				if (number != 0.0)
 					tmpRocket->setForceZ(number);

@@ -28,6 +28,7 @@ limitations under the License.
 constexpr double G = 6.674083131e-11;
 constexpr double c = 299792458.0;
 constexpr double cSq = 89875517873681764.0;
+constexpr double recipCSq = 1.0 / cSq;
 constexpr double MAX_MULTIPLIER = 100000.0;
 
 //SIMULATION INFO
@@ -90,14 +91,18 @@ public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
 	double distanceSquared(const flyingObject& obj) const { return (obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z); }
 	void recalculateGamma(void) {
-		recipGamma = sqrt(1.0 - getVSq() / cSq);
+		double tmp=1.0 - getVSq() * recipCSq;
+		if (tmp <= 0.0)
+			recipGamma = 0.0;
+		else
+			recipGamma = sqrt(tmp);
 	}
 	void recalculateVelocity(void) {
-		double v = getV();
 		if (getVSq() > cSq) {
-			vx = vx*c / v;
-			vy = vy*c / v;
-			vz = vz*c / v;
+			double recipV = 1.0/sqrt(getVSq());
+			vx = vx*c*recipV;
+			vy = vy*c*recipV;
+			vz = vz*c*recipV;
 		}
 	}
 	virtual void updateAcceleration(double Ex, double Ey, double Ez) {
@@ -131,8 +136,8 @@ public:
 	double getAy(void) const { return ay; }
 	double getAz(void) const { return az; }
 	char getType(void) const { return type; }
-	double getVSq(void) const { return (vx*vx + vy*vy + vz*vz); }
-	double getV(void) const { return sqrt(vx*vx + vy*vy + vz*vz); }
+	double getVSq(void) const { return (vx*vx+vy*vy+vz*vz); }
+	double getV(void) const { return sqrt(vx*vx+vy*vy+vz*vz); }
 	double getRecipGamma(void) const { return recipGamma; }
 
 	void setName(std::string newName) { name = newName; }
@@ -143,7 +148,7 @@ public:
 	void setZ(double zZ) { z = zZ; }
 	void setVx(double Vx) { vx = Vx; }
 	void setVy(double Vy) { vy = Vy; }
-	void setVz(double Vz) { vx = Vz; }
+	void setVz(double Vz) { vz = Vz; }
 
 	flyingObject(std::string oName, double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);
 	flyingObject(double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);

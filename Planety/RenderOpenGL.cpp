@@ -261,8 +261,8 @@ void drawObjects(void) {
 		double x, y, z, d;
 		char type;
 		double Fx, Fy, Fz;
-//		double Vx, Vy, Vz, V;
-//		double recipGamma;
+		double Vx , Vy, Vz ,V , recipModVxy;
+		double recipGamma;
 		std::string name;
 		{
 			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
@@ -272,11 +272,11 @@ void drawObjects(void) {
 			d = i->getDiameter();
 			name = i->getName();
 			type = i->getType();
-//			Vx = i->getVx();
-//			Vy = i->getVy();
-//			Vz = i->getVz();
-//			recipGamma = i->getRecipGamma();
-//			V = i->getV();
+			Vx = i->getVx();
+			Vy = i->getVy();
+			Vz = i->getVz();
+			recipGamma = i->getRecipGamma();
+			V = i->getV();
 			if (type == 'r') {
 				const rocket* x = dynamic_cast<const rocket*>(i);
 				Fx = x->getForceX();
@@ -301,23 +301,26 @@ void drawObjects(void) {
 			glEnd();
 			glPopMatrix();
 		}
-
-		if (type == 'o') {
-			glRotated(90, 1, 0, 0);
-//			glRotated(DEG2RAD*acos(Vz / V), Vy, -Vx, 0.0);
-//			glScaled(1.0, 1.0, recipGamma);
-//			glRotated(-DEG2RAD*acos(Vz / V), Vy, -Vx, 0.0);
-			glutWireSphere(d, 40, 20);
+		if (V && (Vx || Vy))
+		{
+			recipModVxy = 1.0 / sqrt(Vx*Vx + Vy*Vy);
+			glRotated(-DEG2RAD*acos(Vz / V), Vy*recipModVxy, -Vx*recipModVxy, 0.0);
 		}
-		else if (type == 'r') {
-			glRotated(-DEG2RAD*acos(Fz / sqrt(Fx*Fx + Fy*Fy + Fz*Fz)), Fy, -Fx, 0.0);
-//			glRotated(DEG2RAD*acos(Vz / V), Vy, -Vx, 0.0);
-//			glScaled(1.0, 1.0, recipGamma);
-//			glRotated(-DEG2RAD*acos(Vz / V), Vy, -Vx, 0.0);
-			glTranslated(0, 0, -2.3*d);
-			glutWireCylinder(d, d*2.5, 40, 20);
-			glTranslated(0, 0, d*2.5);
-			glutWireCone(d*1.2, d*1.7, 40, 20);
+		glScaled(1.0, 1.0, recipGamma);
+		if (V && (Vx || Vy))
+			glRotated(DEG2RAD*acos(Vz / V), Vy*recipModVxy, -Vx*recipModVxy, 0.0);
+		switch (type){
+			case 'o':
+				glRotated(90, 1.0, 0.0, 0.0);
+				glutWireSphere(d, 40, 20);
+				break;
+			case 'r':
+				glRotated(-DEG2RAD*acos(Fz / sqrt(Fx*Fx + Fy*Fy + Fz*Fz)), Fy, -Fx, 0.0);
+				glTranslated(0, 0, -1.7*d);
+				glutWireCylinder(d, d*2.3, 40, 20);
+				glTranslated(0, 0, d*2.3);
+				glutWireCone(d*1.2, d*1.7, 40, 20);
+				break;
 		}
 		glPopMatrix();
 	}
@@ -488,7 +491,7 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) 
 			return;
 		if (button == 3)
-			scale /= .9;
+			scale /= 0.9;
 		if (button == 4)
 			scale *= 0.9;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
