@@ -250,6 +250,7 @@ void gravityField::computeGravity(double dt) {
 				if (i == j)
 					continue;
 				else {
+					std::lock_guard<std::mutex> lg(objectsMutex);
 					double iDisjSq = i->distanceSquared(*j);
 					if (iDisjSq) {
 						double MGRRR = G*j->m / (iDisjSq * sqrt(iDisjSq));
@@ -292,6 +293,7 @@ void gravityField::computeGravity(double dt) {
 				if (i == j)
 					continue;
 				else {
+					std::lock_guard<std::mutex> lg(objectsMutex);
 					double iDisjSq = i->distanceSquared(*j);
 					if (iDisjSq) {
 						double MGRRR = G*j->m / (iDisjSq * sqrt(iDisjSq));
