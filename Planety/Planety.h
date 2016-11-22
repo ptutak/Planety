@@ -26,5 +26,5 @@ limitations under the License.
 
 
 
-//INIT
+//INIT PLANETY
 void initPlanety(void);

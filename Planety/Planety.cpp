@@ -35,7 +35,7 @@ flyingObject* readObjectFromStream(std::istream& in) {
 	flyingObject* tmpObject = nullptr;
 	std::string line;
 	std::getline(in, line);
-	if (line != "" && line[0]!='#') {
+	if (line != "" && line[0]!='#' &&(line[0]>32)) {
 		tmpObject = new flyingObject;
 		std::stringstream linestrm(line);
 		line = "";
@@ -488,7 +488,7 @@ void optionsMenu(gravityField* gravField) {
 
 /*
 
-INIT
+INIT PLANETY
 
 */
 
@@ -546,10 +546,12 @@ void initPlanety(void) {
 			optionsMenu(gravField);
 			break;
 		case '9':
-			std::lock_guard<std::mutex> lg(fieldMutex);
-			delete gravField;
-			std::cout << "Goodbye" << std::endl;
-			return;
+			{
+				std::lock_guard<std::mutex> lg(fieldMutex);
+				delete gravField;
+				std::cout << "Goodbye" << std::endl;
+				return;
+			}
 		}
 	} while (1);
 }

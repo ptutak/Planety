@@ -17,7 +17,13 @@ limitations under the License.
 
 int main(void)
 {
-	initPlanety();
+	try {
+		initPlanety();
+	}
+	catch (...) {
+		std::cout << "Niespodziewany wyjatek" << std::endl;
+		exit(-1);
+	}
 	system("pause");
 }
 	

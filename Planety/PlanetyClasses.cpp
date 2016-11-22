@@ -15,8 +15,41 @@ limitations under the License.
 */
 #include "PlanetyClasses.h"
 
+// MISCELLANOUS
 
-//FRAME INFO
+std::string reformatSec(double sec) {
+	double restSec;
+	unsigned long long mins;
+	unsigned long hours;
+	unsigned long days;
+	unsigned long years;
+	mins = static_cast<unsigned long long>(sec) / 60;
+	restSec = sec - static_cast<double>(mins * 60);
+	hours = static_cast<unsigned long>(mins / 60);
+	mins = mins % 60;
+	days = hours / 24;
+	hours = hours % 24;
+	years = days / 365;
+	days = days % 365;
+	std::stringstream tmp;
+	if (years)
+		tmp << years << "y ";
+	if (days)
+		tmp << days << "d ";
+	if (hours)
+		tmp << hours << "h ";
+	if (mins)
+		tmp << mins << "m ";
+	tmp << restSec << "s";
+	return tmp.str();
+}
+
+/*
+
+SIMULATION INFO
+
+*/
+
 simulationInfo info;
 
 simulationInfo& getInfo(void) { return info; }
@@ -73,6 +106,7 @@ std::ostream& operator<<(std::ostream& out, const flyingObject& obj) {
 		out << "Fy: " << robj.getForceY() << " N" << std::endl;
 		out << "Fz: " << robj.getForceZ() << " N" << std::endl;
 	}
+	out << "time: " << reformatSec(obj.getTime()) << std::endl;
 	return out;
 }
 
@@ -93,8 +127,10 @@ std::string flyingObject::shortDescription(int prec) const {
 	return retString;
 }
 flyingObject::flyingObject(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
-	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
+	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ }, time{ 0.0 } {
 	oNumber++;
+	if (d <= 0.0) 
+		d = 0.0;
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
@@ -102,9 +138,11 @@ flyingObject::flyingObject(std::string oName, double mass, double diameter, doub
 	recalculateGamma();
 }
 flyingObject::flyingObject(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
-	m{ mass }, type{ 'o' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ } {
+	m{ mass }, type{ 'o' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ }, time{ 0.0 } {
 	name = "Object" + std::to_string(oNumber);
 	oNumber++;
+	if (d <= 0.0)
+		d = 0.0;
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
@@ -330,13 +368,13 @@ void gravityField::removeObject(const std::string name) {
 			break;
 		}
 	}
-	maxX = .0;
-	maxY = .0;
-	maxZ = .0;
-	minX = .0;
-	minY = .0;
-	minZ = .0;
-	maxD = .0;
+	maxX = 0.0;
+	maxY = 0.0;
+	maxZ = 0.0;
+	minX = 0.0;
+	minY = 0.0;
+	minZ = 0.0;
+	maxD = 0.0;
 	{
 		std::lock_guard<std::mutex> lg(objectsMutex);
 		for (auto i : objects) {

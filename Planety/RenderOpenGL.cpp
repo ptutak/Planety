@@ -17,7 +17,6 @@ limitations under the License.
 
 enum
 {
-	AUTOMATIC_CAMERA, //nie zaimplementowano
 	MANUAL_CAMERA,
 	CENTER_VIEW,
 	DESCRIPTION_ON_OFF,
@@ -63,17 +62,6 @@ int windowWidth = 0;
 int windowHeight = 0;
 
 constexpr double DEG2RAD = 180.0 / 3.14159;
-
-void drawCircle(double radius)
-{
-	const double RAD2DEG = 3.14159 / 180;
-	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < 360; i++) {
-		double degInRad = i*RAD2DEG;
-		glVertex3d(cos(degInRad)*radius, sin(degInRad)*radius, 0.0);
-	}
-	glEnd();
-}
 
 void drawAxis(void) {
 	glPushMatrix();
@@ -192,40 +180,13 @@ void drawObjectsList(void) {
 			std::lock_guard<std::mutex> lg((*field)->objectsMutex);
 			strm << *i;
 		}
-		drawStream(strm, leftPosition * 150, topPosition*-200, GLUT_BITMAP_HELVETICA_12, 12);
+		drawStream(strm, leftPosition * 170, topPosition*-200, GLUT_BITMAP_HELVETICA_12, 12);
 		++leftPosition;
-		if (((leftPosition + 1) * 150) > glutGet(GLUT_WINDOW_WIDTH)){
+		if (((leftPosition + 1) * 170) > glutGet(GLUT_WINDOW_WIDTH)){
 			leftPosition = 0;
 			topPosition++;
 		}
 	}
-}
-
-std::string reformatSec(double sec) {
-	double restSec;
-	unsigned long long mins;
-	unsigned long hours;
-	unsigned long days;
-	unsigned long years;
-	mins = static_cast<unsigned long long>(sec) / 60;
-	restSec = sec - static_cast<double>(mins * 60);
-	hours = static_cast<unsigned long>(mins / 60);
-	mins = mins % 60;
-	days = hours / 24;
-	hours = hours % 24;
-	years = days / 365;
-	days = days % 365;
-	std::stringstream tmp;
-	if (years)
-		tmp << years<<"y ";
-	if (days)
-		tmp << days << "d ";
-	if (hours)
-		tmp << hours << "h ";
-	if (mins)
-		tmp << mins << "m ";
-	tmp << restSec << "s";
-	return tmp.str();
 }
 
 void drawParameters(void) {
@@ -316,7 +277,7 @@ void drawObjects(void) {
 				break;
 			case 'r':
 				glRotated(-DEG2RAD*acos(Fz / sqrt(Fx*Fx + Fy*Fy + Fz*Fz)), Fy, -Fx, 0.0);
-				glTranslated(0, 0, -1.7*d);
+				glTranslated(0, 0, -1.558*d);
 				glutWireCylinder(d, d*2.3, 40, 20);
 				glTranslated(0, 0, d*2.3);
 				glutWireCone(d*1.2, d*1.7, 40, 20);
@@ -491,9 +452,9 @@ void mouseButton(int button, int state, int x, int y) {
 		if (state == GLUT_UP) 
 			return;
 		if (button == 3)
-			scale /= 0.9;
+			scale /= 0.87;
 		if (button == 4)
-			scale *= 0.9;
+			scale *= 0.87;
 		reshape(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 	}
 }

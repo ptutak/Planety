@@ -31,7 +31,15 @@ constexpr double cSq = 89875517873681764.0;
 constexpr double recipCSq = 1.0 / cSq;
 constexpr double MAX_MULTIPLIER = 100000.0;
 
-//SIMULATION INFO
+//MISCELLANOUS
+
+std::string reformatSec(double sec);
+
+/*
+
+SIMULATION INFO
+
+*/
 
 class simulationInfo {
 	int lastFrame;
@@ -86,6 +94,7 @@ protected:
 	double ySpin;
 	double zSpin;
 	double recipGamma;
+	double time;
 
 public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
@@ -111,9 +120,10 @@ public:
 		az = Ez * recipGamma;
 	}
 	virtual void updatePosition(double dt) {
-		x = x + vx*dt + ax*dt*dt / 2;
-		y = y + vy*dt + ay*dt*dt / 2;
-		z = z + vz*dt + az*dt*dt / 2;
+		x += vx*dt + ax*dt*dt / 2;
+		y += vy*dt + ay*dt*dt / 2;
+		z += vz*dt + az*dt*dt / 2;
+		time += dt*recipGamma;
 	}
 	virtual void updateVelocity(double dt) {
 		vx += dt*ax;
@@ -139,10 +149,11 @@ public:
 	double getVSq(void) const { return (vx*vx+vy*vy+vz*vz); }
 	double getV(void) const { return sqrt(vx*vx+vy*vy+vz*vz); }
 	double getRecipGamma(void) const { return recipGamma; }
+	double getTime(void) const { return time; }
 
 	void setName(std::string newName) { name = newName; }
 	virtual void setMass(double mass) { m = mass; }
-	void setDiameter(double diameter) { d = diameter; }
+	void setDiameter(double diameter) { if (diameter <= 0.0) d = 0.0; else d = diameter; }
 	void setX(double xX) { x = xX; }
 	void setY(double yY) { y = yY; }
 	void setZ(double zZ) { z = zZ; }
