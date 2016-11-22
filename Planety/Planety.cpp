@@ -252,7 +252,7 @@ void startSimulationMenu(gravityField* gravField) {
 	std::cout << "PGUP,PGDOWN - przesuwaja obiekty wzgledem osi z" << std::endl;
 	std::cout << "BACKSPACE - resetuje czas rzeczywisty" << std::endl;
 	std::cout << "ENTER - start,stop dla czasu rzeczywistego" << std::endl;
-	std::cout << "+,- - zwiekszaja/zmniejszaja mnoznik czasu co 0.5" << std::endl;
+	std::cout << "+,- - zwiekszaja/zmniejszaja mnoznik czasu co 1.0" << std::endl;
 	std::cout << "*,/ - mnoza mnoznik czasu przez 2, 0.5" << std::endl;
 	std::cout << "KOLKO MYSZKI - zwieksza, zmniejsza obiekty w oknie symulacji" << std::endl;
 	std::cout << "NACISNIJ I PRZYTRZYMAJ LEWY PRZYCISK MYSZY - by zaczac obracac obiektami" << std::endl;
