@@ -134,6 +134,9 @@ flyingObject::flyingObject(std::string oName, double mass, double diameter, doub
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
+	col.r = 0.0;
+	col.g = 0.0;
+	col.b = 0.0;
 	recalculateVelocity();
 	recalculateGamma();
 }
@@ -146,6 +149,9 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
+	col.r = 0.0;
+	col.g = 0.0;
+	col.b = 0.0;
 	recalculateVelocity();
 	recalculateGamma();
 }

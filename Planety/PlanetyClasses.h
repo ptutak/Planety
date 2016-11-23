@@ -70,7 +70,11 @@ simulationInfo& getInfo(void);
 CLASS FLYING OBJECT
 
 */
-
+struct color {
+	double r;
+	double g;
+	double b;
+};
 
 class flyingObject
 {
@@ -95,6 +99,7 @@ protected:
 	double zSpin;
 	double recipGamma;
 	double time;
+	color col;
 
 public:
 	double distance(const flyingObject& obj) const { return sqrt((obj.x - x)*(obj.x - x) + (obj.y - y)*(obj.y - y) + (obj.z - z)*(obj.z - z)); }
@@ -150,6 +155,7 @@ public:
 	double getV(void) const { return sqrt(vx*vx+vy*vy+vz*vz); }
 	double getRecipGamma(void) const { return recipGamma; }
 	double getTime(void) const { return time; }
+	color getColor(void) const { return col; }
 
 	void setName(std::string newName) { name = newName; }
 	virtual void setMass(double mass) { m = mass; }
@@ -160,6 +166,15 @@ public:
 	void setVx(double Vx) { vx = Vx; }
 	void setVy(double Vy) { vy = Vy; }
 	void setVz(double Vz) { vz = Vz; }
+	void setColor(color newColor) {
+		col = newColor;
+		if (col.r < 0.0) col.r = 0.0;
+		if (col.r > 1.0) col.r = 1.0;
+		if (col.b < 0.0) col.b = 0.0;
+		if (col.b > 1.0) col.b = 1.0;
+		if (col.g < 0.0) col.g = 0.0;
+		if (col.g > 1.0) col.g = 1.0;
+	}
 
 	flyingObject(std::string oName, double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);
 	flyingObject(double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);

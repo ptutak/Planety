@@ -217,7 +217,6 @@ void drawParameters(void) {
 
 void drawObjects(void) {
 	std::lock_guard<std::mutex> lg(*fieldMutex);
-	glColor3d(0, 0, 0);
 	for (const auto i : (*field)->getObjects()) {
 		double x, y, z, d;
 		char type;
@@ -225,6 +224,7 @@ void drawObjects(void) {
 		double Vx , Vy, Vz ,V , recipModVxy;
 		double recipGamma;
 		std::string name;
+		color col;
 		{
 			std::lock_guard<std::mutex> lg2((*field)->objectsMutex);
 			x = i->getX();
@@ -238,6 +238,7 @@ void drawObjects(void) {
 			Vz = i->getVz();
 			recipGamma = i->getRecipGamma();
 			V = i->getV();
+			col = i->getColor();
 			if (type == 'r') {
 				const rocket* x = dynamic_cast<const rocket*>(i);
 				Fx = x->getForceX();
@@ -245,10 +246,11 @@ void drawObjects(void) {
 				Fz = x->getForceZ();
 			}
 		}
-		d = d / 2.0;
+		d = d *0.5;
 		glPushMatrix();
 		glTranslated(x, y, z);
 		if (toggleFloatingDescription) {
+			glColor3d(0.0, 0.0, 0.0);
 			glPushMatrix();
 			glRotated(-rotatez, 0.0, 0.0, 1.0);
 			glRotated(-rotatey, 0.0, 1.0, 0.0);
@@ -270,6 +272,7 @@ void drawObjects(void) {
 		glScaled(1.0, 1.0, recipGamma);
 		if (V && (Vx || Vy))
 			glRotated(DEG2RAD*acos(Vz / V), Vy*recipModVxy, -Vx*recipModVxy, 0.0);
+		glColor3d(col.r, col.g, col.b);
 		switch (type){
 			case 'o':
 				glRotated(90, 1.0, 0.0, 0.0);

@@ -28,3 +28,5 @@ limitations under the License.
 
 //INIT PLANETY
 void initPlanety(void);
+
+void initPlanety(int argc, char* argv[]);

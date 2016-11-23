@@ -15,15 +15,17 @@ limitations under the License.
 */
 #include "Planety.h"
 
-int main(void)
+int main(int argc, char* argv[])
 {
 	try {
-		initPlanety();
+		if (argc > 1)
+			initPlanety(argc, argv);
+		else
+			initPlanety();
 	}
 	catch (...) {
 		std::cout << "Niespodziewany wyjatek" << std::endl;
 		exit(-1);
 	}
-	system("pause");
 }
 	
