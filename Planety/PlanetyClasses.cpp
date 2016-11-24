@@ -365,7 +365,7 @@ void gravityField::printObjectsList(std::ostream& out, int prec) const {
 }
 void gravityField::removeObject(const std::string name) {
 	std::list<flyingObject*>::const_iterator pos;
-	for (pos = objects.cbegin(); pos != objects.cend(); pos++) {
+	for (pos = objects.cbegin(); pos != objects.cend(); ++pos) {
 		std::lock_guard<std::mutex> lg(objectsMutex);
 		if ((*pos)->name == name) {
 			flyingObject* tmp = *pos;

@@ -159,7 +159,7 @@ public:
 
 	void setName(std::string newName) { name = newName; }
 	virtual void setMass(double mass) { m = mass; }
-	void setDiameter(double diameter) { if (diameter <= 0.0) d = 0.0; else d = diameter; }
+	void setDiameter(double diameter) { if (diameter < 0.0) d = 0.0; else d = diameter; }
 	void setX(double xX) { x = xX; }
 	void setY(double yY) { y = yY; }
 	void setZ(double zZ) { z = zZ; }
@@ -251,7 +251,9 @@ class gravityField
 	int intMultiplier;
 	double restMultiplier;
 	double simulTime;
+
 	std::list<flyingObject*> objects;
+	
 	mutable std::mutex simulTimeMutex;
 	mutable std::mutex multiplierMutex;
 	mutable std::mutex maxMutex;
