@@ -665,8 +665,8 @@ void initPlanety(int argc, char* argv[]) {
 		else if ((std::string(argv[i]) == "-h") || (std::string(argv[i]) == "--help")) {
 			std::cout << "Uzycie linii polecen:" << std::endl;
 			std::cout << "-h, --help	: pomoc" << std::endl << std::endl;
-			std::cout << "-i plik		: wczytuje plik wejsciowy dla symulacji" << std::endl << std::endl;
-			std::cout << "-o [plik]		: ustawia plik wyjsciowy do ktorego bedzie zapisany stan po zakonczeniu symulacji - domyslnie STDOUT" << std::endl<<std::endl;
+			std::cout << "-i plik		: wczytuje plik wejsciowy dla symulacji - domyslnie STDIN" << std::endl << std::endl;
+			std::cout << "-o plik		: ustawia plik wyjsciowy do ktorego bedzie zapisany stan po zakonczeniu symulacji - domyslnie STDOUT" << std::endl<<std::endl;
 			std::cout << "-p precyzja	: jesli byl podany parametr -o, ustawia precyzje zapisu danych do pliku, domyslnie - do 4 miejsc" << std::endl<<std::endl;
 			std::cout << "-f rozmiar	: ustawia rozmiar ramki czasu w ms (liczba calkowita), np. 20 dla 20ms, domyslnie: "<<FRAME_SIZE << std::endl<<std::endl;
 			std::cout << "-m mnoznik	: ustawia mnoznik czasu z ktorym rozpocznie sie symulacja (liczba zmiennoprzecinkowa), np. 2.0" << std::endl;
@@ -675,9 +675,10 @@ void initPlanety(int argc, char* argv[]) {
 		}
 	}
 	if (iread)
-		readFromFile(gravField, input);
-	else
-		readFromFile(gravField, "STDIN");
+		if (input!="")
+			readFromFile(gravField, input);
+		else
+			readFromFile(gravField, "STDIN");
 
 	if (compute)
 		computeTime(gravField, time, FRAME_SIZE / static_cast<double>(CLOCKS_PER_SEC));
