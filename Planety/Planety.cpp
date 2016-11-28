@@ -188,7 +188,7 @@ void addObjectMenu(gravityField* gravField) {
 			gravField->addObject(made);
 		}
 		catch (const std::invalid_argument& exc) {
-			std::cout << exc.what() << std::endl;
+			std::cerr << exc.what() << std::endl;
 			delete made;
 			made = nullptr;
 		}
@@ -252,6 +252,8 @@ void modifyObjectMenu(gravityField* gravField) {
 
 void startSimulation(gravityField* gravField) {
 	std::cout << std::endl;
+	std::cout << "Ramka czasu: " << FRAME_SIZE << "ms" << std::endl;
+	std::cout << "Poczatkowy mnoznik czasu: " << INITIAL_MULTIPLIER << std::endl;
 	std::cout << "Nacisnij przycisk, by otworzyc okno symulacji, podczas symulacji nacisnij Escape by przerwac." << std::endl;
 	std::cout << "Obsluga:" << std::endl;
 	std::cout << "SPACE - ustawia mnoznik czasu na 1.0" << std::endl;
@@ -345,28 +347,49 @@ void saveToFileMenu(gravityField* gravField) {
 void readFromFile(gravityField* gravField, std::string fileName) {
 	std::lock_guard<std::mutex> lg(fieldMutex);
 	std::ifstream file;
-	file.open(fileName, std::fstream::in);
-	if (file.good()) {
-		while (!file.eof()) {
-			flyingObject* tmpObject = readObjectFromStream(file);
+	if (fileName == "STDIN")
+	{
+		while (!std::cin.eof()) {
+			flyingObject* tmpObject = readObjectFromStream(std::cin);
 			if (tmpObject)
 			{
 				try {
 					gravField->addObject(tmpObject);
 				}
 				catch (std::invalid_argument x) {
-					std::cout << x.what() << std::endl;
+					std::cerr << x.what() << std::endl;
 					delete tmpObject;
 					tmpObject = nullptr;
 				}
 			}
-			if (tmpObject)
-				std::cout << "Dodano obiekt: " << tmpObject->shortDescription() << std::endl;
+//			if (tmpObject)
+//				std::cout << "Dodano obiekt: " << tmpObject->shortDescription() << std::endl;
 		}
-		file.close();
 	}
 	else {
-		std::cout << "Niepoprawna nazwa pliku" << std::endl;
+		file.open(fileName, std::fstream::in);
+		if (file.good()) {
+			while (!file.eof()) {
+				flyingObject* tmpObject = readObjectFromStream(file);
+				if (tmpObject)
+				{
+					try {
+						gravField->addObject(tmpObject);
+					}
+					catch (std::invalid_argument x) {
+						std::cerr << x.what() << std::endl;
+						delete tmpObject;
+						tmpObject = nullptr;
+					}
+				}
+//				if (tmpObject)
+//					std::cout << " Dodano obiekt: " << tmpObject->shortDescription() << std::endl;
+			}
+			file.close();
+		}
+		else {
+			std::cout << "Niepoprawna nazwa pliku" << std::endl;
+		}
 	}
 }
 
@@ -376,6 +399,8 @@ void readFromFileMenu(gravityField* gravField) {
 	std::cout << "Podaj nazwe pliku" << std::endl;
 	std::getline(std::cin, filename);
 	readFromFile(gravField, filename);
+	std::cout << "Obiekty w symulacji:" << std::endl;
+	gravField->printObjectsList(std::cout);
 }
 
 void deleteAllObjectsMenu(gravityField*& gravField) {
@@ -394,6 +419,20 @@ void deleteAllObjectsMenu(gravityField*& gravField) {
 	}
 	std::cout << "Nie usuwam" << std::endl;
 }
+void computeTime(gravityField* gravField, double time,double newFrame) {
+	long long currentTime = 0;
+	long long intTime = 0;
+	double restTime = 0.0;
+	gravField->setTimeMultiplier(MAX_MULTIPLIER);
+	intTime = static_cast<long long>((time / newFrame) / MAX_MULTIPLIER);
+	restTime = time - static_cast<double>(intTime)*MAX_MULTIPLIER*newFrame;
+	while (currentTime < intTime) {
+		gravField->computeGravity(newFrame);
+		currentTime++;
+	}
+	gravField->setTimeMultiplier(restTime / newFrame);
+	gravField->computeGravity(newFrame);
+}
 
 void computeTimeMenu(gravityField* gravField) {
 	std::cout << "Podaj czas obliczen w s:" << std::endl;
@@ -402,19 +441,7 @@ void computeTimeMenu(gravityField* gravField) {
 	std::cout << "Podaj wielkosc ramki w ms:" << std::endl;
 	int frame;
 	std::cin >> frame;
-	long long currentTime = 0;
-	double newFrame = frame / static_cast<double>(1000);
-	long long intTime = 0;
-	double restTime = 0.0;
-	gravField->setTimeMultiplier(MAX_MULTIPLIER);
-	intTime = static_cast<long long>((time/newFrame) / MAX_MULTIPLIER);
-	restTime = time - static_cast<double>(intTime)*MAX_MULTIPLIER*newFrame;
-	while (currentTime < intTime) {
-		gravField->computeGravity(newFrame);
-		currentTime++;
-	}
-	gravField->setTimeMultiplier(restTime/newFrame);
-	gravField->computeGravity(newFrame);
+	computeTime(gravField, time, frame / static_cast<double>(1000));
 	gravField->printObjects();
 	std::string tmp;
 	std::getline(std::cin, tmp);
@@ -574,57 +601,93 @@ void initPlanety(void) {
 
 void initPlanety(int argc, char* argv[]) {
 	gravityField* gravField = new gravityField;
-	std::string output="";
+	std::string output = "";
+	std::string input = "";
 	int prec=-1;
+	double time=0.0;
+	bool compute = false;
+	bool owrite = false;
+	bool iread = false;
 	for (int i = 1; i < argc; ++i) {
 		if (std::string(argv[i]) == "-i") {
-			if (argv[i + 1]) {
-				readFromFile(gravField, argv[i + 1]);
+			iread = true;
+			if (i + 1<argc) {
+				input = std::string(argv[i + 1]);
 				i++;
 			}
 		}
 		else if (std::string(argv[i]) == "-f") {
-			if (argv[i + 1]) {
+			if (i + 1<argc) {
 				std::stringstream tmp;
 				tmp << argv[i + 1];
 				int frame;
 				tmp >> frame;
 				if (frame > 0) {
 					const_cast<int&>(FRAME_SIZE) = frame;
-					std::cout << "Ramka czasu: " << FRAME_SIZE << "ms" << std::endl;
 				}
 				i++;
 			}
 		}
 		else if (std::string(argv[i]) == "-m") {
-			if (argv[i + 1]) {
+			if (i + 1<argc) {
 				std::stringstream tmp;
 				tmp << argv[i + 1];
 				double multi;
 				tmp >> multi;
 				if (multi>=0.0) {
 					const_cast<double&>(INITIAL_MULTIPLIER) = multi;
-					std::cout << "Poczatkowy mnoznik czasu: " << INITIAL_MULTIPLIER << std::endl;
 				}
 				i++;
 			}
 		}
 		else if (std::string(argv[i]) == "-o") {
-			if (argv[i + 1]) {
+			owrite = true;
+			if (i + 1<argc) {
 				output == std::string(argv[i + 1]);
 				i++;
 			}
 		}
 		else if (std::string(argv[i]) == "-p") {
-			if (argv[i + 1]) {
+			if (i + 1<argc) {
 				std::stringstream tmp;
 				tmp << argv[i + 1];
 				tmp >> prec;
 			}
 		}
+		else if (std::string(argv[i]) == "-c") {
+			if (i + 1<argc) {
+				std::stringstream tmp;
+				tmp << argv[i + 1];
+				tmp >> time;
+				compute = true;
+			}
+		}
+		else if ((std::string(argv[i]) == "-h") || (std::string(argv[i]) == "--help")) {
+			std::cout << "Uzycie linii polecen:" << std::endl;
+			std::cout << "-h, --help	: pomoc" << std::endl << std::endl;
+			std::cout << "-i plik		: wczytuje plik wejsciowy dla symulacji" << std::endl << std::endl;
+			std::cout << "-o [plik]		: ustawia plik wyjsciowy do ktorego bedzie zapisany stan po zakonczeniu symulacji - domyslnie STDOUT" << std::endl<<std::endl;
+			std::cout << "-p precyzja	: jesli byl podany parametr -o, ustawia precyzje zapisu danych do pliku, domyslnie - do 4 miejsc" << std::endl<<std::endl;
+			std::cout << "-f rozmiar	: ustawia rozmiar ramki czasu w ms (liczba calkowita), np. 20 dla 20ms, domyslnie: "<<FRAME_SIZE << std::endl<<std::endl;
+			std::cout << "-m mnoznik	: ustawia mnoznik czasu z ktorym rozpocznie sie symulacja (liczba zmiennoprzecinkowa), np. 2.0" << std::endl;
+			std::cout << "-c czas		: wykonuje obliczenia symulacyjne dla podanego czasu zakonczenia w sekundach (liczba zmiennoprzecinkowa)" << std::endl;
+			return;
+		}
 	}
-	startSimulation(gravField);
-	if (output != "") {
-		saveToFile(gravField, output, prec);
-	}
+	if (iread)
+		readFromFile(gravField, input);
+	else
+		readFromFile(gravField, "STDIN");
+
+	if (compute)
+		computeTime(gravField, time, FRAME_SIZE / static_cast<double>(CLOCKS_PER_SEC));
+	else
+		startSimulation(gravField);
+	
+	if (owrite)
+		if (output != "" && output!="STDOUT")
+			saveToFile(gravField, output, prec);
+		else
+			gravField->printObjectsList(std::cout, prec);
+	
 }
