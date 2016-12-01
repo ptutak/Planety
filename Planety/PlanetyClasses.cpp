@@ -127,21 +127,18 @@ std::string flyingObject::shortDescription(int prec) const {
 	return retString;
 }
 flyingObject::flyingObject(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
-	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ }, time{ 0.0 } {
+	name{ oName }, type{ 'o' }, m{ mass }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ }, time{ 0.0 } ,col{ 1.0,1.0,0.94 } {
 	oNumber++;
 	if (d <= 0.0) 
 		d = 0.0;
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
-	col.r = 0.0;
-	col.g = 0.0;
-	col.b = 0.0;
 	recalculateVelocity();
 	recalculateGamma();
 }
 flyingObject::flyingObject(double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
-	m{ mass }, type{ 'o' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ }, time{ 0.0 } {
+	m{ mass }, type{ 'o' }, d{ diameter }, x{ xX }, y{ yY }, z{ zZ }, vx{ vX }, vy{ vY }, vz{ vZ }, time{ 0.0 },col{ 1.0,1.0,0.94 } {
 	name = "Object" + std::to_string(oNumber);
 	oNumber++;
 	if (d <= 0.0)
@@ -149,9 +146,6 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	ax = 0.0;
 	ay = 0.0;
 	az = 0.0;
-	col.r = 0.0;
-	col.g = 0.0;
-	col.b = 0.0;
 	recalculateVelocity();
 	recalculateGamma();
 }

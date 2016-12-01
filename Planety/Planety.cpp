@@ -251,7 +251,6 @@ void modifyObjectMenu(gravityField* gravField) {
 }
 
 void startSimulation(gravityField* gravField) {
-	std::cout << std::endl;
 	std::cout << "Ramka czasu: " << FRAME_SIZE << "ms" << std::endl;
 	std::cout << "Poczatkowy mnoznik czasu: " << INITIAL_MULTIPLIER << std::endl;
 	std::cout << "Nacisnij przycisk, by otworzyc okno symulacji, podczas symulacji nacisnij Escape by przerwac." << std::endl;

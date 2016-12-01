@@ -22,6 +22,9 @@ enum
 	DESCRIPTION_ON_OFF,
 	FLOATING_DESCRIPTION_ON_OFF,
 	PARAMETERS_ON_OFF,
+	//Color Themes
+	COLOR_LIGHT,
+	COLOR_DARK,
 	EXIT
 };
 
@@ -60,6 +63,9 @@ bool toggleParameters = true;
 
 int windowWidth = 0;
 int windowHeight = 0;
+
+color backgroundColor{ 0.074, 0.066, 0.152 };
+color textColor{ 1.0,1.0,1.0 };
 
 constexpr double DEG2RAD = 180.0 / 3.14159;
 
@@ -250,7 +256,7 @@ void drawObjects(void) {
 		glPushMatrix();
 		glTranslated(x, y, z);
 		if (toggleFloatingDescription) {
-			glColor3d(0.0, 0.0, 0.0);
+			glColor3d(textColor.r, textColor.g, textColor.b);
 			glPushMatrix();
 			glRotated(-rotatez, 0.0, 0.0, 1.0);
 			glRotated(-rotatey, 0.0, 1.0, 0.0);
@@ -272,7 +278,10 @@ void drawObjects(void) {
 		glScaled(1.0, 1.0, recipGamma);
 		if (V && (Vx || Vy))
 			glRotated(DEG2RAD*acos(Vz / V), Vy*recipModVxy, -Vx*recipModVxy, 0.0);
+		if (col == backgroundColor)
+			col = -(col - 1.0);
 		glColor3d(col.r, col.g, col.b);
+		glLineWidth(2.0);
 		switch (type){
 			case 'o':
 				glRotated(90, 1.0, 0.0, 0.0);
@@ -286,17 +295,18 @@ void drawObjects(void) {
 				glutWireCone(d*1.2, d*1.7, 40, 20);
 				break;
 		}
+		glLineWidth(1.0);
 		glPopMatrix();
 	}
 }
 
 void display(void) {
-	glClearColor(1.0, 1.0, 0.94, 1.0);
+	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	translateDrawAxisOrigin();
-	glColor3d(0.0, 0.0, 0.0);
+	glColor3d(textColor.r, textColor.g, textColor.b);
 	if (toggleDescription)
 		drawObjectsList();
 	if (toggleParameters)
@@ -494,6 +504,15 @@ void menu(int value)
 	case PARAMETERS_ON_OFF:
 		toggleParameters=!toggleParameters;
 		break;
+	//Color Themes
+	case COLOR_LIGHT:
+		backgroundColor = { 1.0,1.0,0.94 };
+		textColor = { 0.0,0.0,0.0 };
+		break;
+	case COLOR_DARK:
+		backgroundColor = { 0.074, 0.066, 0.152 };
+		textColor = { 1.0,1.0,1.0 };
+		break;
 	case EXIT:
 		glutLeaveMainLoop();
 	}
@@ -522,11 +541,16 @@ void initMenu(void) {
 	glutAddMenuEntry("Wlacz/Wylacz opisy", DESCRIPTION_ON_OFF);
 	glutAddMenuEntry("Wlacz/Wylacz latajace etykiety", FLOATING_DESCRIPTION_ON_OFF);
 	glutAddMenuEntry("Wlacz/Wylacz dane symulacji", PARAMETERS_ON_OFF);
+
+	int menuColor = glutCreateMenu(menu);
+	glutAddMenuEntry("Jasny", COLOR_LIGHT);
+	glutAddMenuEntry("Ciemny", COLOR_DARK);
 	// menu g³ówne
 
 	glutCreateMenu(menu);
 	glutAddSubMenu("Obraz", menuImage);
 	glutAddSubMenu("Opisy", menuDescription);
+	glutAddSubMenu("Kolor", menuColor);
 	glutAddMenuEntry("Wyjscie", EXIT);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

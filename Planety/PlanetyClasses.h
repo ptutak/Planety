@@ -29,7 +29,7 @@ constexpr double G = 6.674083131e-11;
 constexpr double c = 299792458.0;
 constexpr double cSq = 89875517873681764.0;
 constexpr double recipCSq = 1.0 / cSq;
-constexpr double MAX_MULTIPLIER = 100000.0;
+constexpr double MAX_MULTIPLIER = 500000.0;
 
 //MISCELLANOUS
 
@@ -74,7 +74,41 @@ struct color {
 	double r;
 	double g;
 	double b;
+
+	color& normalize(void) {
+		if (r < 0.0)
+			r = 0.0;
+		else if (r > 1.0)
+			r = 1.0;
+		if (g < 0.0)
+			g = 0.0;
+		else if (g > 1.0)
+			g = 1.0;
+		if (b < 0.0)
+			b = 0.0;
+		else if (b > 1.0)
+			b = 1.0;
+		return *this;
+	}
+
+	color operator+(double v) const {
+		return color{ r + v,g + v,b + v };
+	}
+	color operator-(double v) const {
+		return color{ r - v,g - v,b - v };
+	}
+	color operator-(void) const {
+		return color{ -r,-g,-b };
+	}
+	color operator*(double v) const {
+		return color{ r * v, g * v, b * v };
+	}
+	bool operator==(const color& c)const {
+		return ((c.r == r) && (c.g == g) && (c.b == b));
+	}
 };
+
+
 
 class flyingObject
 {
@@ -113,7 +147,7 @@ public:
 	}
 	void recalculateVelocity(void) {
 		if (getVSq() > cSq) {
-			double recipV = 1.0/sqrt(getVSq());
+			double recipV = 1.0 / sqrt(getVSq());
 			vx = vx*c*recipV;
 			vy = vy*c*recipV;
 			vz = vz*c*recipV;
@@ -168,12 +202,7 @@ public:
 	void setVz(double Vz) { vz = Vz; }
 	void setColor(color newColor) {
 		col = newColor;
-		if (col.r < 0.0) col.r = 0.0;
-		if (col.r > 1.0) col.r = 1.0;
-		if (col.b < 0.0) col.b = 0.0;
-		if (col.b > 1.0) col.b = 1.0;
-		if (col.g < 0.0) col.g = 0.0;
-		if (col.g > 1.0) col.g = 1.0;
+		col.normalize();
 	}
 
 	flyingObject(std::string oName, double mass = 0.0, double diameter = 0.0, double xX = 0.0, double yY = 0.0, double zZ = 0.0, double vX = 0.0, double vY = 0.0, double vZ = 0.0);
