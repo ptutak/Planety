@@ -85,6 +85,7 @@ CLASS FLYING OBJECT
 
 */
 
+
 int flyingObject::oNumber = 0;
 
 std::ostream& operator<<(std::ostream& out, const flyingObject& obj) {
@@ -157,6 +158,7 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	recalculateGamma();
 }
 
+
 /*
 
 CLASS ROCKET
@@ -203,6 +205,152 @@ rocket::rocket(double mass, double diameter, double xX, double yY, double zZ, do
 	flyingObject(mass, diameter, xX, yY, zZ, vX, vY, vZ), Fxe{ Fx }, Fye{ Fy }, Fze{ Fz } {
 	type = 'r';
 	recalculateEngineAcceleration();
+}
+
+/*
+
+INPUT/OUTPUT FUNCTIONS
+
+*/
+
+flyingObject* readObjectFromStream(std::istream& in) {
+	flyingObject* tmpObject = nullptr;
+	std::string line;
+	std::getline(in, line);
+	if (line != "" && line[0] != '#' && (line[0]>32)) {
+		tmpObject = new flyingObject;
+		std::stringstream linestrm(line);
+		line = "";
+		std::getline(linestrm, line, ',');
+		if (line != "")
+			tmpObject->setName(line);
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setMass(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setDiameter(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setX(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setY(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpObject->setZ(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				if (data.get() == 'c')
+					tmpObject->setVx(number*c);
+				else
+					tmpObject->setVx(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				if (data.get() == 'c')
+					tmpObject->setVy(number*c);
+				else
+					tmpObject->setVy(number);
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				if (data.get() == 'c')
+					tmpObject->setVz(number*c);
+				else
+					tmpObject->setVz(number);
+		}
+		tmpObject->recalculateVelocity();
+		tmpObject->recalculateGamma();
+		if (!linestrm.eof()) {
+			std::string line;
+			rocket* tmpRocket = new rocket{ *tmpObject };
+			std::getline(linestrm, line, ',');
+			double number = 0.0;
+			std::stringstream data(line);
+			data >> number;
+			if (number != 0.0)
+				tmpRocket->setForceX(number);
+			if (!linestrm.eof()) {
+				std::string line;
+				std::getline(linestrm, line, ',');
+				double number = 0.0;
+				std::stringstream data(line);
+				data >> number;
+				if (number != 0.0)
+					tmpRocket->setForceY(number);
+			}
+			if (!linestrm.eof()) {
+				std::string line;
+				std::getline(linestrm, line, ',');
+				double number = 0.0;
+				std::stringstream data(line);
+				data >> number;
+				if (number != 0.0)
+					tmpRocket->setForceZ(number);
+			}
+			if (tmpRocket->getForceX()*tmpRocket->getForceX() + tmpRocket->getForceY()*tmpRocket->getForceY() + tmpRocket->getForceZ()*tmpRocket->getForceZ()) {
+				delete tmpObject;
+				tmpObject = dynamic_cast<flyingObject*>(tmpRocket);
+			}
+			else
+				delete tmpRocket;
+		}
+		if (!linestrm.eof()) {
+			std::string line;
+			std::getline(linestrm, line);
+			color col = { 1.0,1.0,0.94};
+			std::stringstream data(line);
+			data >> col.r >> col.g >> col.b;
+			tmpObject->setColor(col);
+		}
+	}
+	return tmpObject;
 }
 
 /*

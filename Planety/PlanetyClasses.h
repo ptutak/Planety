@@ -262,6 +262,7 @@ public:
 	~rocket(void) {}
 };
 
+flyingObject* readObjectFromStream(std::istream& in);
 /*
 
 CLASS GRAVITY FIELD
