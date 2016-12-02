@@ -124,6 +124,13 @@ std::string flyingObject::shortDescription(int prec) const {
 	strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString;
+	retString += ',' + "0.0";
+	retString += ',' + "0.0";
+	retString += ',' + "0.0";
+	strm << std::setprecision(3);
+	strm.str(""); strm.clear(); strm << col.r; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << col.g; tempString = strm.str(); retString += ' ' + tempString;
+	strm.str(""); strm.clear(); strm << col.b; tempString = strm.str(); retString += ' ' + tempString;
 	return retString;
 }
 flyingObject::flyingObject(std::string oName, double mass, double diameter, double xX, double yY, double zZ, double vX, double vY, double vZ) :
@@ -159,12 +166,24 @@ CLASS ROCKET
 std::string rocket::shortDescription(int prec) const {
 	std::string retString, tempString;
 	std::stringstream strm;
-	retString = flyingObject::shortDescription(prec);
+	retString = name;
 	if (prec >= 0)
 		strm << std::setprecision(prec);
+	strm.str(""); strm << m; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << d; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << x; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << y; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << z; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << Fxe; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << Fye; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << Fze; tempString = strm.str(); retString += ',' + tempString;
+	strm << std::setprecision(3);
+	strm.str(""); strm.clear(); strm << col.r; tempString = strm.str(); retString += ',' + tempString;
+	strm.str(""); strm.clear(); strm << col.g; tempString = strm.str(); retString += ' ' + tempString;
+	strm.str(""); strm.clear(); strm << col.b; tempString = strm.str(); retString += ' ' + tempString;
 	return retString;
 }
 
