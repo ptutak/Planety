@@ -125,9 +125,12 @@ std::string flyingObject::shortDescription(int prec) const {
 	strm.str(""); strm.clear(); strm << vx; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << vy; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << vz; tempString = strm.str(); retString += ',' + tempString;
-	retString += ',' + "0.0";
-	retString += ',' + "0.0";
-	retString += ',' + "0.0";
+	retString += ",";
+	retString += "0.0";
+	retString += ",";
+	retString += "0.0";
+	retString += ",";
+	retString +="0.0";
 	strm << std::setprecision(3);
 	strm.str(""); strm.clear(); strm << col.r; tempString = strm.str(); retString += ',' + tempString;
 	strm.str(""); strm.clear(); strm << col.g; tempString = strm.str(); retString += ' ' + tempString;
