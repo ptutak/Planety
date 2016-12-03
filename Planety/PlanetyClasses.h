@@ -263,6 +263,7 @@ public:
 };
 
 flyingObject* readObjectFromStream(std::istream& in);
+
 /*
 
 CLASS GRAVITY FIELD
@@ -283,6 +284,7 @@ class gravityField
 	double simulTime;
 
 	std::list<flyingObject*> objects;
+	std::list<const flyingObject*> objectsSafe;
 	
 	mutable std::mutex simulTimeMutex;
 	mutable std::mutex multiplierMutex;
@@ -308,7 +310,7 @@ public:
 	double getMaxD(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxD; }
 	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return (static_cast<double>(intMultiplier)+restMultiplier); }
 	double getSimulTime(void) const { std::lock_guard<std::mutex> lg(simulTimeMutex); return simulTime; }
-	const std::list<flyingObject*>& getObjects(void) const { return objects; }
+	const std::list<const flyingObject*>& getObjects(void) const { return objectsSafe; }
 	
 	void resetTotalTime(void) { std::lock_guard<std::mutex> lg(simulTimeMutex); simulTime=0.0; }
 	void setTimeMultiplier(double multi);

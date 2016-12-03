@@ -66,10 +66,14 @@ void deleteObjectMenu(gravityField* gravField) {
 	std::cout << "Podaj nazwe obiektu, ktory chcesz usunac, lub nacisnij Enter by wyjsc" << std::endl;
 	std::string name;
 	std::getline(std::cin, name);
-	if (name == "")
+	if (name == "") {
+		std::cout << "OK - nie usuwam" << std::endl;
 		return;
-	if (gravField->searchObject(name))
+	}
+	if (gravField->searchObject(name)) {
 		gravField->removeObject(name);
+		std::cout << "Usunalem: " << name << std::endl;
+	}
 	else
 		std::cout << "Bledna nazwa obiektu" << std::endl;
 }
