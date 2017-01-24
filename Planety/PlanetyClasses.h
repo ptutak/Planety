@@ -263,7 +263,6 @@ public:
 };
 
 flyingObject* readObjectFromStream(std::istream& in);
-
 /*
 
 CLASS GRAVITY FIELD
@@ -284,7 +283,6 @@ class gravityField
 	double simulTime;
 
 	std::list<flyingObject*> objects;
-	std::list<const flyingObject*> objectsSafe;
 	
 	mutable std::mutex simulTimeMutex;
 	mutable std::mutex multiplierMutex;

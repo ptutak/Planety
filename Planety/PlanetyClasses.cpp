@@ -377,7 +377,6 @@ void gravityField::addObject(flyingObject* next) {
 				throw std::invalid_argument("Obiekt o nazwie " + next->getName() + " juz istnieje");
 		}
 		objects.push_back(next);
-		objectsSafe.push_back(next);
 	}
 	{
 		std::lock_guard<std::mutex> lg(multiplierMutex);
@@ -512,26 +511,24 @@ void gravityField::multiplyMultiplier(double multi) {
 }
 void gravityField::printObjects(void) const {
 	std::lock_guard<std::mutex> lg(objectsMutex);
-	for (auto x : objectsSafe) {
+	for (const auto x : objects) {
 		std::cout << *x;
 	}
 }
 void gravityField::printObjectsList(std::ostream& out, int prec) const {
 	std::lock_guard<std::mutex> lg(objectsMutex);
-	for (auto x : objectsSafe) {
+	for (const auto x : objects) {
 		out << x->shortDescription(prec);
 		out << std::endl;
 	}
 }
 void gravityField::removeObject(const std::string name) {
-	std::list<flyingObject*>::iterator pos;
-	std::list<const flyingObject*>::iterator posS;
-	for (pos = objects.begin(),posS=objectsSafe.begin(); pos != objects.end(); ++pos,++posS) {
+	std::list<flyingObject*>::const_iterator pos;
+	for (pos = objects.cbegin(); pos != objects.cend(); ++pos) {
 		std::lock_guard<std::mutex> lg(objectsMutex);
 		if ((*pos)->name == name) {
 			flyingObject* tmp = *pos;
 			objects.erase(pos);
-			objectsSafe.erase(posS);
 			delete tmp;
 			break;
 		}
@@ -545,7 +542,7 @@ void gravityField::removeObject(const std::string name) {
 	maxD = 0.0;
 	{
 		std::lock_guard<std::mutex> lg(objectsMutex);
-		for (auto i : objectsSafe) {
+		for (auto i : objects) {
 			std::lock_guard<std::mutex> lg(maxMutex);
 			if (i->x > maxX)
 				maxX = i->x;
@@ -566,7 +563,7 @@ void gravityField::removeObject(const std::string name) {
 }
 bool gravityField::searchObject(const std::string name) const {
 	std::lock_guard<std::mutex> lg(objectsMutex);
-	for (auto x : objectsSafe) {
+	for (auto x : objects) {
 		if (x->getName() == name)
 			return true;
 	}
@@ -588,6 +585,5 @@ gravityField::~gravityField(void) {
 	while (!objects.empty()) {
 		delete objects.front();
 		objects.pop_front();
-		objectsSafe.pop_front();
 	}
 }
