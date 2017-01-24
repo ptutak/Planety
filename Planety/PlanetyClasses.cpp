@@ -107,7 +107,7 @@ std::ostream& operator<<(std::ostream& out, const flyingObject& obj) {
 		out << "Fy: " << robj.getForceY() << " N" << std::endl;
 		out << "Fz: " << robj.getForceZ() << " N" << std::endl;
 	}
-	out << "time: " << reformatSec(obj.getTime()) << std::endl;
+	out << "t: " << reformatSec(obj.getTime()) << std::endl;
 	return out;
 }
 
