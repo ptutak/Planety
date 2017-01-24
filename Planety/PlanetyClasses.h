@@ -147,7 +147,7 @@ public:
 	}
 	void recalculateVelocity(void) {
 		if (getVSq() > cSq) {
-			double recipV = 1.0 / sqrt(getVSq());
+			double recipV = 1.0 / getV();
 			vx = vx*c*recipV;
 			vy = vy*c*recipV;
 			vz = vz*c*recipV;
@@ -159,9 +159,9 @@ public:
 		az = Ez * recipGamma;
 	}
 	virtual void updatePosition(double dt) {
-		x += vx*dt + ax*dt*dt / 2;
-		y += vy*dt + ay*dt*dt / 2;
-		z += vz*dt + az*dt*dt / 2;
+		x += vx*dt + ax*dt*dt *0.5;
+		y += vy*dt + ay*dt*dt *0.5;
+		z += vz*dt + az*dt*dt *0.5;
 		time += dt*recipGamma;
 	}
 	virtual void updateVelocity(double dt) {
@@ -251,7 +251,7 @@ public:
 	double getForceY(void) const { return Fye; }
 	double getForceZ(void) const { return Fze; }
 
-	void setMass(double mass) { m = mass;  std::cout << "jest rakieta" << axe; }
+	void setMass(double mass) { m = mass; recalculateEngineAcceleration(); }
 	void setForceX(double Fx) { Fxe = Fx; recalculateEngineAcceleration(); }
 	void setForceY(double Fy) { Fye = Fy; recalculateEngineAcceleration(); }
 	void setForceZ(double Fz) { Fze = Fz; recalculateEngineAcceleration(); }
