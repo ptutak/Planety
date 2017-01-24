@@ -310,7 +310,7 @@ public:
 	double getMaxD(void) const { std::lock_guard<std::mutex> lg(maxMutex); return maxD; }
 	double getTimeMultiplier(void) const { std::lock_guard<std::mutex> lg(multiplierMutex); return (static_cast<double>(intMultiplier)+restMultiplier); }
 	double getSimulTime(void) const { std::lock_guard<std::mutex> lg(simulTimeMutex); return simulTime; }
-	const std::list<const flyingObject*>& getObjects(void) const { return objectsSafe; }
+	const std::list<flyingObject*>& getObjects(void) { return objects; }
 	
 	void resetTotalTime(void) { std::lock_guard<std::mutex> lg(simulTimeMutex); simulTime=0.0; }
 	void setTimeMultiplier(double multi);

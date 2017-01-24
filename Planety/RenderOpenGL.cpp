@@ -223,7 +223,7 @@ void drawParameters(void) {
 
 void drawObjects(void) {
 	std::lock_guard<std::mutex> lg(*fieldMutex);
-	for (auto i : (*field)->getObjects()) {
+	for (const auto i : (*field)->getObjects()) {
 		double x, y, z, d;
 		char type;
 		double Fx, Fy, Fz;
