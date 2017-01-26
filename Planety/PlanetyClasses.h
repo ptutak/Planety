@@ -37,7 +37,7 @@ std::string reformatSec(double sec);
 
 /*
 
-SIMULATION INFO
+CLASS SIMULATION INFO
 
 */
 
@@ -67,9 +67,10 @@ simulationInfo& getInfo(void);
 
 /*
 
-CLASS FLYING OBJECT
+CLASS COLOR
 
 */
+
 struct color {
 	double r;
 	double g;
@@ -108,7 +109,11 @@ struct color {
 	}
 };
 
+/*
 
+CLASS FLYING OBJECT
+
+*/
 
 class flyingObject
 {

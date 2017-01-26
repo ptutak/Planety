@@ -46,7 +46,7 @@ std::string reformatSec(double sec) {
 
 /*
 
-SIMULATION INFO
+CLASS SIMULATION INFO
 
 */
 
@@ -155,7 +155,6 @@ flyingObject::flyingObject(double mass, double diameter, double xX, double yY, d
 	recalculateVelocity();
 	recalculateGamma();
 }
-
 
 /*
 
@@ -356,6 +355,7 @@ flyingObject* readObjectFromStream(std::istream& in) {
 CLASS GRAVITY FIELD
 
 */
+
 void gravityField::addMultiplier(double add) { 
 	std::lock_guard<std::mutex> lg(multiplierMutex);
 	double multi = static_cast<double>(intMultiplier) + restMultiplier;
@@ -367,7 +367,6 @@ void gravityField::addMultiplier(double add) {
 	intMultiplier = static_cast<int>(multi);
 	restMultiplier = multi - static_cast<double>(intMultiplier);
 }
-
 
 void gravityField::addObject(flyingObject* next) {
 	{
